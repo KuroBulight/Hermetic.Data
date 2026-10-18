@@ -1,0 +1,935 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Member Roster & Character Cards</title>
+  <style>
+    /* =========================================
+       1. ตั้งค่าสีและธีมหลัก (แก้ไขสีเว็บได้ที่นี่)
+       ========================================= */
+    :root {
+      --bg-main: #0f111a;
+      --bg-card: #181b28;
+      --bg-card-hover: #212638;
+      --bg-modal: #141722;
+      --text-main: #f3f4f6;
+      --text-muted: #9ca3af;
+      --accent: #6366f1;
+      --accent-glow: rgba(99, 102, 241, 0.35);
+      --border-color: rgba(255, 255, 255, 0.08);
+      --radius-lg: 16px;
+      --radius-md: 12px;
+      --transition: all 0.28s cubic-bezier(0.22, 1, 0.36, 1);
+    }
+
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+    }
+
+    body {
+      font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+      background-color: var(--bg-main);
+      background-image: 
+        radial-gradient(circle at 15% 15%, rgba(99, 102, 241, 0.12) 0%, transparent 40%),
+        radial-gradient(circle at 85% 85%, rgba(236, 72, 153, 0.1) 0%, transparent 40%);
+      color: var(--text-main);
+      min-height: 100vh;
+      line-height: 1.6;
+    }
+
+    /* =========================================
+       2. ส่วนหัวเว็บไซต์ (Header & Controls)
+       ========================================= */
+    header {
+      max-width: 1200px;
+      margin: 0 auto;
+      padding: 48px 24px 24px;
+      text-align: center;
+    }
+
+    .badge-header {
+      display: inline-block;
+      padding: 4px 14px;
+      font-size: 0.78rem;
+      font-weight: 700;
+      letter-spacing: 1.5px;
+      text-transform: uppercase;
+      color: #a5b4fc;
+      background: rgba(99, 102, 241, 0.15);
+      border: 1px solid rgba(99, 102, 241, 0.3);
+      border-radius: 999px;
+      margin-bottom: 12px;
+    }
+
+    header h1 {
+      font-size: 2.5rem;
+      font-weight: 800;
+      letter-spacing: -0.5px;
+      margin-bottom: 8px;
+      background: linear-gradient(135deg, #ffffff 0%, #a5b4fc 100%);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+    }
+
+    header p {
+      color: var(--text-muted);
+      max-width: 600px;
+      margin: 0 auto 28px;
+      font-size: 1rem;
+    }
+
+    /* แถบค้นหาและปุ่มกรองหมวดหมู่ */
+    .controls {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 12px;
+      justify-content: center;
+      align-items: center;
+      margin-bottom: 20px;
+    }
+
+    .search-box {
+      position: relative;
+      width: 100%;
+      max-width: 320px;
+    }
+
+    .search-box input {
+      width: 100%;
+      padding: 10px 16px;
+      background: var(--bg-card);
+      border: 1px solid var(--border-color);
+      border-radius: 999px;
+      color: var(--text-main);
+      font-size: 0.95rem;
+      outline: none;
+      transition: var(--transition);
+    }
+
+    .search-box input:focus {
+      border-color: var(--accent);
+      box-shadow: 0 0 0 3px var(--accent-glow);
+    }
+
+    .filter-group {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 8px;
+      justify-content: center;
+    }
+
+    .filter-btn {
+      padding: 8px 16px;
+      background: var(--bg-card);
+      border: 1px solid var(--border-color);
+      border-radius: 999px;
+      color: var(--text-muted);
+      font-size: 0.88rem;
+      font-weight: 600;
+      cursor: pointer;
+      transition: var(--transition);
+    }
+
+    .filter-btn:hover,
+    .filter-btn.active {
+      background: var(--accent);
+      color: #ffffff;
+      border-color: var(--accent);
+      box-shadow: 0 4px 12px var(--accent-glow);
+    }
+
+    /* =========================================
+       3. ตารางรายชื่อสมาชิก (Member Roster Grid)
+       ========================================= */
+    .container {
+      max-width: 1200px;
+      margin: 0 auto;
+      padding: 12px 24px 64px;
+    }
+
+    .roster-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(260px, 1fr));
+      gap: 24px;
+    }
+
+    .member-item {
+      background: var(--bg-card);
+      border: 1px solid var(--border-color);
+      border-radius: var(--radius-lg);
+      overflow: hidden;
+      cursor: pointer;
+      transition: var(--transition);
+      position: relative;
+      display: flex;
+      flex-direction: column;
+    }
+
+    .member-item:hover {
+      transform: translateY(-6px);
+      background: var(--bg-card-hover);
+      border-color: var(--item-color, var(--accent));
+      box-shadow: 0 12px 28px -8px rgba(0, 0, 0, 0.6),
+                  0 0 18px -4px var(--item-color, var(--accent-glow));
+    }
+
+    .member-thumb {
+      height: 220px;
+      width: 100%;
+      position: relative;
+      overflow: hidden;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      background: linear-gradient(160deg, rgba(255,255,255,0.03), rgba(0,0,0,0.4));
+    }
+
+    .member-thumb img {
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+      transition: transform 0.4s ease;
+    }
+
+    .member-item:hover .member-thumb img {
+      transform: scale(1.06);
+    }
+
+    .member-id-tag {
+      position: absolute;
+      top: 12px;
+      left: 12px;
+      background: rgba(15, 17, 26, 0.75);
+      backdrop-filter: blur(6px);
+      padding: 4px 10px;
+      border-radius: 6px;
+      font-size: 0.75rem;
+      font-weight: 700;
+      letter-spacing: 1px;
+      color: var(--text-main);
+      border: 1px solid var(--border-color);
+    }
+
+    .member-rank-tag {
+      position: absolute;
+      top: 12px;
+      right: 12px;
+      padding: 3px 10px;
+      border-radius: 6px;
+      font-size: 0.75rem;
+      font-weight: 800;
+      color: #fff;
+      background: var(--item-color, var(--accent));
+      box-shadow: 0 2px 8px rgba(0,0,0,0.4);
+    }
+
+    .member-info {
+      padding: 18px 20px;
+      flex: 1;
+      display: flex;
+      flex-direction: column;
+      justify-content: space-between;
+    }
+
+    .member-role {
+      font-size: 0.78rem;
+      text-transform: uppercase;
+      letter-spacing: 1px;
+      color: var(--item-color, #a5b4fc);
+      font-weight: 700;
+      margin-bottom: 4px;
+    }
+
+    .member-name {
+      font-size: 1.25rem;
+      font-weight: 700;
+      margin-bottom: 4px;
+      color: #fff;
+    }
+
+    .member-alias {
+      font-size: 0.88rem;
+      color: var(--text-muted);
+      margin-bottom: 14px;
+    }
+
+    .click-hint {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding-top: 12px;
+      border-top: 1px solid var(--border-color);
+      font-size: 0.82rem;
+      color: var(--text-muted);
+      font-weight: 600;
+    }
+
+    .member-item:hover .click-hint {
+      color: #fff;
+    }
+
+    /* =========================================
+       4. หน้าต่างการ์ดตัวละคร (Character Card Modal)
+       ========================================= */
+    .modal-overlay {
+      position: fixed;
+      inset: 0;
+      background: rgba(7, 9, 15, 0.82);
+      backdrop-filter: blur(8px);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      padding: 20px;
+      z-index: 1000;
+      opacity: 0;
+      pointer-events: none;
+      transition: opacity 0.25s ease;
+    }
+
+    .modal-overlay.open {
+      opacity: 1;
+      pointer-events: auto;
+    }
+
+    .character-card {
+      width: 100%;
+      max-width: 820px;
+      background: var(--bg-modal);
+      border: 1px solid rgba(255, 255, 255, 0.14);
+      border-radius: 22px;
+      overflow: hidden;
+      display: grid;
+      grid-template-columns: 320px 1fr;
+      box-shadow: 0 25px 60px -15px rgba(0, 0, 0, 0.85),
+                  0 0 35px -5px var(--card-accent, var(--accent-glow));
+      transform: translateY(24px) scale(0.96);
+      transition: transform 0.3s cubic-bezier(0.22, 1, 0.36, 1);
+      position: relative;
+      max-height: 90vh;
+    }
+
+    .modal-overlay.open .character-card {
+      transform: translateY(0) scale(1);
+    }
+
+    /* ปุ่มปิดการ์ด */
+    .close-btn {
+      position: absolute;
+      top: 16px;
+      right: 16px;
+      width: 38px;
+      height: 38px;
+      border-radius: 50%;
+      background: rgba(255, 255, 255, 0.08);
+      border: 1px solid var(--border-color);
+      color: #fff;
+      font-size: 1.2rem;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      z-index: 10;
+      transition: var(--transition);
+    }
+
+    .close-btn:hover {
+      background: #ef4444;
+      border-color: #ef4444;
+      transform: rotate(90deg);
+    }
+
+    /* ฝั่งซ้ายของการ์ด: รูปตัวละครและข้อมูลสังกัด */
+    .card-visual {
+      position: relative;
+      background: linear-gradient(180deg, rgba(255,255,255,0.04) 0%, rgba(0,0,0,0.6) 100%);
+      border-right: 1px solid var(--border-color);
+      display: flex;
+      flex-direction: column;
+      justify-content: space-between;
+      overflow: hidden;
+    }
+
+    .card-visual-img {
+      width: 100%;
+      height: 100%;
+      min-height: 360px;
+      object-fit: cover;
+    }
+
+    .card-visual-overlay {
+      position: absolute;
+      inset: 0;
+      background: linear-gradient(to top, rgba(20, 23, 34, 0.98) 8%, rgba(20, 23, 34, 0.2) 55%, transparent 100%);
+      display: flex;
+      flex-direction: column;
+      justify-content: flex-end;
+      padding: 24px;
+    }
+
+    .card-id-badge {
+      display: inline-block;
+      align-self: flex-start;
+      padding: 4px 10px;
+      border-radius: 6px;
+      font-size: 0.75rem;
+      font-weight: 800;
+      letter-spacing: 1px;
+      background: var(--card-accent, var(--accent));
+      color: #fff;
+      margin-bottom: 8px;
+    }
+
+    .card-quote {
+      font-style: italic;
+      font-size: 0.9rem;
+      color: #d1d5db;
+      border-left: 3px solid var(--card-accent, var(--accent));
+      padding-left: 10px;
+      margin-top: 6px;
+    }
+
+    /* ฝั่งขวาของการ์ด: รายละเอียด, ประวัติ, และค่าสถานะ */
+    .card-details {
+      padding: 32px 28px;
+      overflow-y: auto;
+      display: flex;
+      flex-direction: column;
+      gap: 20px;
+    }
+
+    .card-header-info {
+      border-bottom: 1px solid var(--border-color);
+      padding-bottom: 16px;
+    }
+
+    .card-role-label {
+      font-size: 0.82rem;
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: 1.2px;
+      color: var(--card-accent, #a5b4fc);
+    }
+
+    .card-title-name {
+      font-size: 2rem;
+      font-weight: 800;
+      color: #fff;
+      line-height: 1.2;
+      margin: 4px 0;
+    }
+
+    .card-subtitle {
+      font-size: 0.95rem;
+      color: var(--text-muted);
+    }
+
+    /* ข้อมูลจำเพาะสั้นๆ (Meta Grid) */
+    .meta-grid {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 10px;
+    }
+
+    .meta-box {
+      background: rgba(255, 255, 255, 0.03);
+      border: 1px solid var(--border-color);
+      padding: 10px 12px;
+      border-radius: var(--radius-md);
+    }
+
+    .meta-label {
+      font-size: 0.72rem;
+      text-transform: uppercase;
+      color: var(--text-muted);
+      letter-spacing: 0.5px;
+      display: block;
+    }
+
+    .meta-value {
+      font-size: 0.92rem;
+      font-weight: 700;
+      color: #fff;
+    }
+
+    /* ประวัติตัวละคร */
+    .section-title {
+      font-size: 0.82rem;
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: 1px;
+      color: var(--text-muted);
+      margin-bottom: 8px;
+    }
+
+    .card-bio {
+      font-size: 0.94rem;
+      color: #d1d5db;
+      line-height: 1.65;
+    }
+
+    /* ค่าสถานะ (Stats Bars) */
+    .stats-list {
+      display: flex;
+      flex-direction: column;
+      gap: 10px;
+    }
+
+    .stat-row {
+      display: grid;
+      grid-template-columns: 90px 1fr 40px;
+      align-items: center;
+      gap: 10px;
+      font-size: 0.85rem;
+    }
+
+    .stat-name {
+      font-weight: 600;
+      color: #e5e7eb;
+    }
+
+    .stat-bar-bg {
+      width: 100%;
+      height: 8px;
+      background: rgba(255, 255, 255, 0.08);
+      border-radius: 999px;
+      overflow: hidden;
+    }
+
+    .stat-bar-fill {
+      height: 100%;
+      background: var(--card-accent, var(--accent));
+      border-radius: 999px;
+      width: 0%;
+      transition: width 0.6s cubic-bezier(0.22, 1, 0.36, 1);
+    }
+
+    .stat-val {
+      text-align: right;
+      font-weight: 700;
+      color: var(--text-muted);
+    }
+
+    /* ทักษะพิเศษ (Skills / Tags) */
+    .skills-wrap {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 8px;
+    }
+
+    .skill-tag {
+      padding: 5px 12px;
+      border-radius: 8px;
+      font-size: 0.82rem;
+      font-weight: 600;
+      background: rgba(255, 255, 255, 0.05);
+      border: 1px solid var(--border-color);
+      color: #e5e7eb;
+    }
+
+    /* รองรับหน้าจอมือถือ (Responsive) */
+    @media (max-width: 768px) {
+      .character-card {
+        grid-template-columns: 1fr;
+        max-height: 92vh;
+        overflow-y: auto;
+      }
+      .card-visual {
+        height: 260px;
+        border-right: none;
+        border-bottom: 1px solid var(--border-color);
+      }
+      .card-details {
+        overflow-y: visible;
+        padding: 24px 20px;
+      }
+    }
+  </style>
+</head>
+<body>
+
+  <!-- ส่วนหัวเว็บไซต์ -->
+  <header>
+    <span class="badge-header">HCO DATA 1.0</span>
+    <h1>Hermetic Constellation Order</h1>
+    <p>ระบบฐานข้อมูลสมาชิกในองค์กร HCO คลิกที่การ์ดสมาชิกเพื่อเปิดดูข้อมูล</p>
+
+    <div class="controls">
+      <div class="search-box">
+        <input type="text" id="searchInput" placeholder="ค้นหาชื่อ, โค้ดเนม หรือสายงาน..." />
+      </div>
+      <div class="filter-group" id="filterGroup">
+        <button class="filter-btn active" data-role="ALL">ทั้งหมด</button>
+        <button class="filter-btn" data-role="Vanguard">Angelo</button>
+        <button class="filter-btn" data-role="Tactician">WhiteForce</button>
+        <button class="filter-btn" data-role="Specialist">Specialist</button>
+        <button class="filter-btn" data-role="Support">Support</button>
+        <button class="filter-btn" data-role="Explorer">Explorer</button>
+      </div>
+    </div>
+  </header>
+
+  <!-- ตารางแสดงผลสมาชิก -->
+  <main class="container">
+    <div class="roster-grid" id="rosterGrid"></div>
+  </main>
+
+  <!-- หน้าต่าง Modal แสดงการ์ดตัวละครเมื่อคลิก -->
+  <div class="modal-overlay" id="cardModal" aria-hidden="true">
+    <div class="character-card" id="characterCard">
+      <button class="close-btn" id="closeModalBtn" title="ปิดหน้าต่าง">&times;</button>
+
+      <!-- ฝั่งซ้าย: รูปและคำคม -->
+      <div class="card-visual">
+        <img src="" alt="Character Portrait" class="card-visual-img" id="modalImg" />
+        <div class="card-visual-overlay">
+          <span class="card-id-badge" id="modalIdBadge">ID-001</span>
+          <p class="card-quote" id="modalQuote">"คำคมประจำตัวละคร"</p>
+        </div>
+      </div>
+
+      <!-- ฝั่งขวา: ข้อมูลตัวละคร -->
+      <div class="card-details">
+        <div class="card-header-info">
+          <div class="card-role-label" id="modalRole">ROLE</div>
+          <h2 class="card-title-name" id="modalName">Character Name</h2>
+          <div class="card-subtitle" id="modalAlias">Codename / Alias</div>
+        </div>
+
+        <div class="meta-grid">
+          <div class="meta-box">
+            <span class="meta-label">สังกัด / หน่วย</span>
+            <span class="meta-value" id="modalFaction">-</span>
+          </div>
+          <div class="meta-box">
+            <span class="meta-label">ระดับ (Rank)</span>
+            <span class="meta-value" id="modalRank">-</span>
+          </div>
+          <div class="meta-box">
+            <span class="meta-label">สถานะ</span>
+            <span class="meta-value" id="modalStatus">-</span>
+          </div>
+        </div>
+
+        <div>
+          <div class="section-title">ประวัติและข้อมูล (Biography)</div>
+          <p class="card-bio" id="modalBio"></p>
+        </div>
+
+        <div>
+          <div class="section-title">ค่าความสามารถ (Parameters)</div>
+          <div class="stats-list" id="modalStats"></div>
+        </div>
+
+        <div>
+          <div class="section-title">ความสามารถพิเศษ / ทักษะ (Skills)</div>
+          <div class="skills-wrap" id="modalSkills"></div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    /* =========================================================================
+       ส่วนข้อมูลสมาชิก (MODIFY ข้อมูลตัวละครได้ที่นี่ที่เดียว!)
+       - สามารถเปลี่ยนชื่อ, ตำแหน่ง, สีประจำตัว (color), รูปภาพ (image) ได้ทันที
+       - หากมีไฟล์รูปของตัวเอง ให้เปลี่ยนค่า image เป็น path รูป เช่น "images/char01.png"
+         หรือ URL ของรูปได้เลย
+       ========================================================================= */
+    
+    // ฟังก์ชันสร้างภาพ SVG Placeholder อัตโนมัติ (ใช้กรณีที่ยังไม่ได้ใส่ลิงก์รูปจริง)
+    function createPlaceholderAvatar(initials, bgHex, accentHex) {
+      const svg = `
+      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 400 500" width="100%" height="100%">
+        <defs>
+          <linearGradient id="g-${initials}" x1="0%" y1="0%" x2="100%" y2="100%">
+            <stop offset="0%" stop-color="${bgHex}" />
+            <stop offset="100%" stop-color="#0b0d14" />
+          </linearGradient>
+        </defs>
+        <rect width="400" height="500" fill="url(#g-${initials})" />
+        <circle cx="200" cy="190" r="85" fill="${accentHex}" opacity="0.18" />
+        <circle cx="200" cy="175" r="52" fill="${accentHex}" opacity="0.85" />
+        <path d="M105 370 C105 285, 295 285, 295 370 Z" fill="${accentHex}" opacity="0.65" />
+        <text x="200" y="445" font-family="sans-serif" font-size="22" font-weight="bold" fill="#ffffff" opacity="0.35" text-anchor="middle" letter-spacing="4">CHARACTER ART</text>
+      </svg>`;
+      return "data:image/svg+xml;utf8," + encodeURIComponent(svg);
+    }
+
+    const membersData = [
+      {
+        id: "MEM-001",
+        name: "Chernikah",
+        alias: "โค้ดเนม: ---",
+        role: "Explorer",
+        rank: "SSR",
+        faction: "Angelo",
+        status: "Active",
+        color: "#6366f1", // สีประจำตัวละคร (Indigo)
+        image: createPlaceholderAvatar("KV", "#1e1b4b", "#6366f1"),
+        quote: "ไปข้าวกัน :DDDD",
+        bio: "อดีตทีม Primary ในตำนานผู้มีชื่อเสียงว่าเป็นผู้ที่เร็วที่สุดในวงการผู้ใช้เนบิวลา ผู้เคลื่อนไหวได้ได้รวดเร็วและพลังทำลายล้างมหาศาล อาจารย์เณอนิกา",
+        stats: [
+          { label: "Power", value: 320 },
+          { label: "Speed", value: 390 },
+          { label: "Technique", value: 88 },
+          { label: "Defense", value: 70 },
+          { label: "Intelligent", value: 156 }
+        ],
+        skills: ["Blink Strike", "Counter Stance", "Tactical Rush"]
+      },
+      {
+        id: "MEM-002",
+        name: "Lyra Vex",
+        alias: "โค้ดเนม: Cipher Weaver",
+        role: "Tactician",
+        rank: "SSR",
+        faction: "Oracle Network",
+        status: "Active",
+        color: "#ec4899", // สีประจำตัวละคร (Pink)
+        image: createPlaceholderAvatar("LV", "#3b0764", "#ec4899"),
+        quote: "ทุกอย่างในโลกนี้ล้วนเป็นข้อมูล ขึ้นอยู่กับว่าใครจะเป็นคนเขียนสมการ",
+        bio: "นักวางกลยุทธ์และผู้เชี่ยวชาญด้านโครงข่ายข้อมูลระดับสูง สามารถวิเคราะห์ความเป็นไปได้ของสนามรบแบบเรียลไทม์ และควบคุมโดรนสื่อสารเพื่อสร้างความได้เปรียบให้กับสมาชิกในทีม",
+        stats: [
+          { label: "Power", value: 55 },
+          { label: "Speed", value: 78 },
+          { label: "Technique", value: 99 },
+          { label: "Defense", value: 65 }
+        ],
+        skills: ["Neural Override", "Hologram Decoy", "Data Scan"]
+      },
+      {
+        id: "MEM-003",
+        name: "Orion Kade",
+        alias: "โค้ดเนม: Iron Bastion",
+        role: "Vanguard",
+        rank: "SR",
+        faction: "Titan Forge",
+        status: "Active",
+        color: "#f59e0b", // สีประจำตัวละคร (Amber)
+        image: createPlaceholderAvatar("OK", "#451a03", "#f59e0b"),
+        quote: "ตราบใดที่โล่ของฉันยังตั้งอยู่ จะไม่มีใครผ่านไปได้",
+        bio: "ผู้เชี่ยวชาญด้านเกราะหนักและสนามพลังป้องกัน ทำหน้าที่เป็นปราการเหล็กคอยปกป้องเพื่อนร่วมทีมจากการโจมตีรุนแรง มีนิสัยสุขุม รอบคอบ และเป็นที่พึ่งพาได้ในยามวิกฤต",
+        stats: [
+          { label: "Power", value: 85 },
+          { label: "Speed", value: 50 },
+          { label: "Technique", value: 72 },
+          { label: "Defense", value: 98 }
+        ],
+        skills: ["Aegis Barrier", "Ground Slam", "Fortify"]
+      },
+      {
+        id: "MEM-004",
+        name: "Sora Kurosawa",
+        alias: "โค้ดเนม: Nightfall",
+        role: "Specialist",
+        rank: "SSR",
+        faction: "Shadow Guild",
+        status: "Classified",
+        color: "#10b981", // สีประจำตัวละคร (Emerald)
+        image: createPlaceholderAvatar("SK", "#064e3b", "#10b981"),
+        quote: "เงาไม่เคยส่งเสียง แต่รู้ทุกอย่างที่เกิดขึ้นใต้แสงไฟ",
+        bio: "เจ้าหน้าที่ปฏิบัติการลับผู้ถนัดงานแทรกซึมและข่าวกรอง มีประวัติส่วนตัวเป็นความลับสุดยอด สามารถกลมกลืนไปกับสภาพแวดล้อมและจัดการเป้าหมายได้โดยไร้ร่องรอย",
+        stats: [
+          { label: "Power", value: 80 },
+          { label: "Speed", value: 98 },
+          { label: "Technique", value: 94 },
+          { label: "Defense", value: 60 }
+        ],
+        skills: ["Stealth Camo", "Silent Step", "Precision Mark"]
+      },
+      {
+        id: "MEM-005",
+        name: "Elena Rostova",
+        alias: "โค้ดเนม: Aurora Pulse",
+        role: "Support",
+        rank: "SR",
+        faction: "Bio-Med Corps",
+        status: "Active",
+        color: "#06b6d4", // สีประจำตัวละคร (Cyan)
+        image: createPlaceholderAvatar("ER", "#083344", "#06b6d4"),
+        quote: "หน้าที่ของฉันคือพาทุกคนกลับบ้านอย่างปลอดภัย",
+        bio: "แพทย์สนามและนักวิจัยนาโนเทคโนโลยี ผู้พัฒนาอุปกรณ์ฟื้นฟูสภาพร่างกายฉุกเฉินในสนามรบ นอกจากทักษะการรักษาแล้ว ยังสามารถปรับจูนคลื่นพลังงานเพื่อเสริมสมรรถภาพให้ทีมได้อีกด้วย",
+        stats: [
+          { label: "Power", value: 48 },
+          { label: "Speed", value: 75 },
+          { label: "Technique", value: 92 },
+          { label: "Defense", value: 82 }
+        ],
+        skills: ["Nano Repair", "Vital Boost", "Cleanse Field"]
+      },
+      {
+        id: "MEM-006",
+        name: "Noah Sterling",
+        alias: "โค้ดเนม: Chrono Spark",
+        role: "Specialist",
+        rank: "SR",
+        faction: "Horizon Lab",
+        status: "Standby",
+        color: "#a855f7", // สีประจำตัวละคร (Purple)
+        image: createPlaceholderAvatar("NS", "#2e1065", "#a855f7"),
+        quote: "ทฤษฎีจะไม่มีความหมายเลย ถ้าเราไม่กล้าทดลองมันในสนามจริง!",
+        bio: "นักประดิษฐ์หนุ่มอัจฉริยะผู้ออกแบบอาวุธพลังงานต้นแบบ ชื่นชอบการดัดแปลงอุปกรณ์แปลกใหม่เพื่อใช้สร้างจังหวะเหนือความคาดหมายในการต่อสู้",
+        stats: [
+          { label: "Power", value: 88 },
+          { label: "Speed", value: 82 },
+          { label: "Technique", value: 90 },
+          { label: "Defense", value: 64 }
+        ],
+        skills: ["Overcharge", "Gravity Trap", "EMP Burst"]
+      }
+    ];
+
+    /* =========================================================================
+       ส่วนควบคุมการทำงานของหน้าเว็บ (JavaScript Logic)
+       ========================================================================= */
+    const rosterGrid = document.getElementById("rosterGrid");
+    const searchInput = document.getElementById("searchInput");
+    const filterButtons = document.querySelectorAll(".filter-btn");
+    const cardModal = document.getElementById("cardModal");
+    const characterCard = document.getElementById("characterCard");
+    const closeModalBtn = document.getElementById("closeModalBtn");
+
+    let currentRoleFilter = "ALL";
+    let currentSearchQuery = "";
+
+    // ฟังก์ชันสร้างรายการการ์ดในหน้าแรก
+    function renderRoster() {
+      rosterGrid.innerHTML = "";
+
+      const filtered = membersData.filter((member) => {
+        const matchRole = currentRoleFilter === "ALL" || member.role === currentRoleFilter;
+        const query = currentSearchQuery.toLowerCase();
+        const matchSearch =
+          member.name.toLowerCase().includes(query) ||
+          member.alias.toLowerCase().includes(query) ||
+          member.role.toLowerCase().includes(query) ||
+          member.id.toLowerCase().includes(query);
+        return matchRole && matchSearch;
+      });
+
+      if (filtered.length === 0) {
+        rosterGrid.innerHTML = `<p style="grid-column: 1/-1; text-align:center; color:#9ca3af; padding: 40px 0;">ไม่พบข้อมูลสมาชิกที่ค้นหา</p>`;
+        return;
+      }
+
+      filtered.forEach((member) => {
+        const cardEl = document.createElement("div");
+        cardEl.className = "member-item";
+        cardEl.style.setProperty("--item-color", member.color);
+
+        cardEl.innerHTML = `
+          <div class="member-thumb">
+            <img src="${member.image}" alt="${member.name}" />
+            <span class="member-id-tag">${member.id}</span>
+            <span class="member-rank-tag">${member.rank}</span>
+          </div>
+          <div class="member-info">
+            <div>
+              <div class="member-role">${member.role}</div>
+              <div class="member-name">${member.name}</div>
+              <div class="member-alias">${member.alias}</div>
+            </div>
+            <div class="click-hint">
+              <span>ดูการ์ดตัวละคร</span>
+              <span>&rarr;</span>
+            </div>
+          </div>
+        `;
+
+        cardEl.addEventListener("click", () => openCharacterModal(member));
+        rosterGrid.appendChild(cardEl);
+      });
+    }
+
+    // ฟังก์ชันเปิดหน้าต่างการ์ดตัวละคร (Modal)
+    function openCharacterModal(member) {
+      characterCard.style.setProperty("--card-accent", member.color);
+      document.getElementById("modalImg").src = member.image;
+      document.getElementById("modalIdBadge").textContent = member.id;
+      document.getElementById("modalQuote").textContent = `"${member.quote}"`;
+      document.getElementById("modalRole").textContent = member.role;
+      document.getElementById("modalName").textContent = member.name;
+      document.getElementById("modalAlias").textContent = member.alias;
+      document.getElementById("modalFaction").textContent = member.faction;
+      document.getElementById("modalRank").textContent = member.rank;
+      document.getElementById("modalStatus").textContent = member.status;
+      document.getElementById("modalBio").textContent = member.bio;
+
+      // สร้างหลอดค่าพลัง (Stats)
+      const statsContainer = document.getElementById("modalStats");
+      statsContainer.innerHTML = "";
+      member.stats.forEach((st) => {
+        const row = document.createElement("div");
+        row.className = "stat-row";
+        row.innerHTML = `
+          <span class="stat-name">${st.label}</span>
+          <div class="stat-bar-bg">
+            <div class="stat-bar-fill" style="width: 0%" data-target="${st.value}%"></div>
+          </div>
+          <span class="stat-val">${st.value}</span>
+        `;
+        statsContainer.appendChild(row);
+      });
+
+      // สร้างป้ายทักษะ (Skills)
+      const skillsContainer = document.getElementById("modalSkills");
+      skillsContainer.innerHTML = "";
+      member.skills.forEach((skill) => {
+        const span = document.createElement("span");
+        span.className = "skill-tag";
+        span.textContent = skill;
+        skillsContainer.appendChild(span);
+      });
+
+      cardModal.classList.add("open");
+      cardModal.setAttribute("aria-hidden", "false");
+
+      // แอนิเมชันหลอดค่าสถานะวิ่งขึ้นเมื่อเปิดการ์ด
+      requestAnimationFrame(() => {
+        setTimeout(() => {
+          document.querySelectorAll(".stat-bar-fill").forEach((bar) => {
+            bar.style.width = bar.getAttribute("data-target");
+          });
+        }, 60);
+      });
+    }
+
+    // ฟังก์ชันปิดการ์ด
+    function closeCharacterModal() {
+      cardModal.classList.remove("open");
+      cardModal.setAttribute("aria-hidden", "true");
+    }
+
+    // Event Listeners
+    closeModalBtn.addEventListener("click", closeCharacterModal);
+    cardModal.addEventListener("click", (e) => {
+      if (e.target === cardModal) closeCharacterModal();
+    });
+    window.addEventListener("keydown", (e) => {
+      if (e.key === "Escape" && cardModal.classList.contains("open")) {
+        closeCharacterModal();
+      }
+    });
+
+    searchInput.addEventListener("input", (e) => {
+      currentSearchQuery = e.target.value;
+      renderRoster();
+    });
+
+    filterButtons.forEach((btn) => {
+      btn.addEventListener("click", () => {
+        filterButtons.forEach((b) => b.classList.remove("active"));
+        btn.classList.add("active");
+        currentRoleFilter = btn.getAttribute("data-role");
+        renderRoster();
+      });
+    });
+
+    // เริ่มต้นแสดงผล
+    renderRoster();
+  </script>
+</body>
+</html>
