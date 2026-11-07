@@ -1,935 +1,1853 @@
 <!DOCTYPE html>
 <html lang="th">
 <head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Hermetic_Data_File</title>
-  <style>
-    /* =========================================
-       1. ตั้งค่าสีและธีมหลัก (แก้ไขสีเว็บได้ที่นี่)
-       ========================================= */
-    :root {
-      --bg-main: #0f111a;
-      --bg-card: #181b28;
-      --bg-card-hover: #212638;
-      --bg-modal: #141722;
-      --text-main: #f3f4f6;
-      --text-muted: #9ca3af;
-      --accent: #6366f1;
-      --accent-glow: rgba(99, 102, 241, 0.35);
-      --border-color: rgba(255, 255, 255, 0.08);
-      --radius-lg: 16px;
-      --radius-md: 12px;
-      --transition: all 0.28s cubic-bezier(0.22, 1, 0.36, 1);
-    }
-
-    * {
-      box-sizing: border-box;
-      margin: 0;
-      padding: 0;
-    }
-
-    body {
-      font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-      background-color: var(--bg-main);
-      background-image: 
-        radial-gradient(circle at 15% 15%, rgba(99, 102, 241, 0.12) 0%, transparent 40%),
-        radial-gradient(circle at 85% 85%, rgba(236, 72, 153, 0.1) 0%, transparent 40%);
-      color: var(--text-main);
-      min-height: 100vh;
-      line-height: 1.6;
-    }
-
-    /* =========================================
-       2. ส่วนหัวเว็บไซต์ (Header & Controls)
-       ========================================= */
-    header {
-      max-width: 1200px;
-      margin: 0 auto;
-      padding: 48px 24px 24px;
-      text-align: center;
-    }
-
-    .badge-header {
-      display: inline-block;
-      padding: 4px 14px;
-      font-size: 0.78rem;
-      font-weight: 700;
-      letter-spacing: 1.5px;
-      text-transform: uppercase;
-      color: #a5b4fc;
-      background: rgba(99, 102, 241, 0.15);
-      border: 1px solid rgba(99, 102, 241, 0.3);
-      border-radius: 999px;
-      margin-bottom: 12px;
-    }
-
-    header h1 {
-      font-size: 2.5rem;
-      font-weight: 800;
-      letter-spacing: -0.5px;
-      margin-bottom: 8px;
-      background: linear-gradient(135deg, #ffffff 0%, #a5b4fc 100%);
-      -webkit-background-clip: text;
-      -webkit-text-fill-color: transparent;
-    }
-
-    header p {
-      color: var(--text-muted);
-      max-width: 600px;
-      margin: 0 auto 28px;
-      font-size: 1rem;
-    }
-
-    /* แถบค้นหาและปุ่มกรองหมวดหมู่ */
-    .controls {
-      display: flex;
-      flex-wrap: wrap;
-      gap: 12px;
-      justify-content: center;
-      align-items: center;
-      margin-bottom: 20px;
-    }
-
-    .search-box {
-      position: relative;
-      width: 100%;
-      max-width: 320px;
-    }
-
-    .search-box input {
-      width: 100%;
-      padding: 10px 16px;
-      background: var(--bg-card);
-      border: 1px solid var(--border-color);
-      border-radius: 999px;
-      color: var(--text-main);
-      font-size: 0.95rem;
-      outline: none;
-      transition: var(--transition);
-    }
-
-    .search-box input:focus {
-      border-color: var(--accent);
-      box-shadow: 0 0 0 3px var(--accent-glow);
-    }
-
-    .filter-group {
-      display: flex;
-      flex-wrap: wrap;
-      gap: 8px;
-      justify-content: center;
-    }
-
-    .filter-btn {
-      padding: 8px 16px;
-      background: var(--bg-card);
-      border: 1px solid var(--border-color);
-      border-radius: 999px;
-      color: var(--text-muted);
-      font-size: 0.88rem;
-      font-weight: 600;
-      cursor: pointer;
-      transition: var(--transition);
-    }
-
-    .filter-btn:hover,
-    .filter-btn.active {
-      background: var(--accent);
-      color: #ffffff;
-      border-color: var(--accent);
-      box-shadow: 0 4px 12px var(--accent-glow);
-    }
-
-    /* =========================================
-       3. ตารางรายชื่อสมาชิก (Member Roster Grid)
-       ========================================= */
-    .container {
-      max-width: 1200px;
-      margin: 0 auto;
-      padding: 12px 24px 64px;
-    }
-
-    .roster-grid {
-      display: grid;
-      grid-template-columns: repeat(auto-fill, minmax(260px, 1fr));
-      gap: 24px;
-    }
-
-    .member-item {
-      background: var(--bg-card);
-      border: 1px solid var(--border-color);
-      border-radius: var(--radius-lg);
-      overflow: hidden;
-      cursor: pointer;
-      transition: var(--transition);
-      position: relative;
-      display: flex;
-      flex-direction: column;
-    }
-
-    .member-item:hover {
-      transform: translateY(-6px);
-      background: var(--bg-card-hover);
-      border-color: var(--item-color, var(--accent));
-      box-shadow: 0 12px 28px -8px rgba(0, 0, 0, 0.6),
-                  0 0 18px -4px var(--item-color, var(--accent-glow));
-    }
-
-    .member-thumb {
-      height: 220px;
-      width: 100%;
-      position: relative;
-      overflow: hidden;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      background: linear-gradient(160deg, rgba(255,255,255,0.03), rgba(0,0,0,0.4));
-    }
-
-    .member-thumb img {
-      width: 100%;
-      height: 100%;
-      object-fit: cover;
-      transition: transform 0.4s ease;
-    }
-
-    .member-item:hover .member-thumb img {
-      transform: scale(1.06);
-    }
-
-    .member-id-tag {
-      position: absolute;
-      top: 12px;
-      left: 12px;
-      background: rgba(15, 17, 26, 0.75);
-      backdrop-filter: blur(6px);
-      padding: 4px 10px;
-      border-radius: 6px;
-      font-size: 0.75rem;
-      font-weight: 700;
-      letter-spacing: 1px;
-      color: var(--text-main);
-      border: 1px solid var(--border-color);
-    }
-
-    .member-rank-tag {
-      position: absolute;
-      top: 12px;
-      right: 12px;
-      padding: 3px 10px;
-      border-radius: 6px;
-      font-size: 0.75rem;
-      font-weight: 800;
-      color: #fff;
-      background: var(--item-color, var(--accent));
-      box-shadow: 0 2px 8px rgba(0,0,0,0.4);
-    }
-
-    .member-info {
-      padding: 18px 20px;
-      flex: 1;
-      display: flex;
-      flex-direction: column;
-      justify-content: space-between;
-    }
-
-    .member-role {
-      font-size: 0.78rem;
-      text-transform: uppercase;
-      letter-spacing: 1px;
-      color: var(--item-color, #a5b4fc);
-      font-weight: 700;
-      margin-bottom: 4px;
-    }
-
-    .member-name {
-      font-size: 1.25rem;
-      font-weight: 700;
-      margin-bottom: 4px;
-      color: #fff;
-    }
-
-    .member-alias {
-      font-size: 0.88rem;
-      color: var(--text-muted);
-      margin-bottom: 14px;
-    }
-
-    .click-hint {
-      display: flex;
-      align-items: center;
-      justify-content: space-between;
-      padding-top: 12px;
-      border-top: 1px solid var(--border-color);
-      font-size: 0.82rem;
-      color: var(--text-muted);
-      font-weight: 600;
-    }
-
-    .member-item:hover .click-hint {
-      color: #fff;
-    }
-
-    /* =========================================
-       4. หน้าต่างการ์ดตัวละคร (Character Card Modal)
-       ========================================= */
-    .modal-overlay {
-      position: fixed;
-      inset: 0;
-      background: rgba(7, 9, 15, 0.82);
-      backdrop-filter: blur(8px);
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      padding: 20px;
-      z-index: 1000;
-      opacity: 0;
-      pointer-events: none;
-      transition: opacity 0.25s ease;
-    }
-
-    .modal-overlay.open {
-      opacity: 1;
-      pointer-events: auto;
-    }
-
-    .character-card {
-      width: 100%;
-      max-width: 820px;
-      background: var(--bg-modal);
-      border: 1px solid rgba(255, 255, 255, 0.14);
-      border-radius: 22px;
-      overflow: hidden;
-      display: grid;
-      grid-template-columns: 320px 1fr;
-      box-shadow: 0 25px 60px -15px rgba(0, 0, 0, 0.85),
-                  0 0 35px -5px var(--card-accent, var(--accent-glow));
-      transform: translateY(24px) scale(0.96);
-      transition: transform 0.3s cubic-bezier(0.22, 1, 0.36, 1);
-      position: relative;
-      max-height: 90vh;
-    }
-
-    .modal-overlay.open .character-card {
-      transform: translateY(0) scale(1);
-    }
-
-    /* ปุ่มปิดการ์ด */
-    .close-btn {
-      position: absolute;
-      top: 16px;
-      right: 16px;
-      width: 38px;
-      height: 38px;
-      border-radius: 50%;
-      background: rgba(255, 255, 255, 0.08);
-      border: 1px solid var(--border-color);
-      color: #fff;
-      font-size: 1.2rem;
-      cursor: pointer;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      z-index: 10;
-      transition: var(--transition);
-    }
-
-    .close-btn:hover {
-      background: #ef4444;
-      border-color: #ef4444;
-      transform: rotate(90deg);
-    }
-
-    /* ฝั่งซ้ายของการ์ด: รูปตัวละครและข้อมูลสังกัด */
-    .card-visual {
-      position: relative;
-      background: linear-gradient(180deg, rgba(255,255,255,0.04) 0%, rgba(0,0,0,0.6) 100%);
-      border-right: 1px solid var(--border-color);
-      display: flex;
-      flex-direction: column;
-      justify-content: space-between;
-      overflow: hidden;
-    }
-
-    .card-visual-img {
-      width: 100%;
-      height: 100%;
-      min-height: 360px;
-      object-fit: cover;
-    }
-
-    .card-visual-overlay {
-      position: absolute;
-      inset: 0;
-      background: linear-gradient(to top, rgba(20, 23, 34, 0.98) 8%, rgba(20, 23, 34, 0.2) 55%, transparent 100%);
-      display: flex;
-      flex-direction: column;
-      justify-content: flex-end;
-      padding: 24px;
-    }
-
-    .card-id-badge {
-      display: inline-block;
-      align-self: flex-start;
-      padding: 4px 10px;
-      border-radius: 6px;
-      font-size: 0.75rem;
-      font-weight: 800;
-      letter-spacing: 1px;
-      background: var(--card-accent, var(--accent));
-      color: #fff;
-      margin-bottom: 8px;
-    }
-
-    .card-quote {
-      font-style: italic;
-      font-size: 0.9rem;
-      color: #d1d5db;
-      border-left: 3px solid var(--card-accent, var(--accent));
-      padding-left: 10px;
-      margin-top: 6px;
-    }
-
-    /* ฝั่งขวาของการ์ด: รายละเอียด, ประวัติ, และค่าสถานะ */
-    .card-details {
-      padding: 32px 28px;
-      overflow-y: auto;
-      display: flex;
-      flex-direction: column;
-      gap: 20px;
-    }
-
-    .card-header-info {
-      border-bottom: 1px solid var(--border-color);
-      padding-bottom: 16px;
-    }
-
-    .card-role-label {
-      font-size: 0.82rem;
-      font-weight: 700;
-      text-transform: uppercase;
-      letter-spacing: 1.2px;
-      color: var(--card-accent, #a5b4fc);
-    }
-
-    .card-title-name {
-      font-size: 2rem;
-      font-weight: 800;
-      color: #fff;
-      line-height: 1.2;
-      margin: 4px 0;
-    }
-
-    .card-subtitle {
-      font-size: 0.95rem;
-      color: var(--text-muted);
-    }
-
-    /* ข้อมูลจำเพาะสั้นๆ (Meta Grid) */
-    .meta-grid {
-      display: grid;
-      grid-template-columns: repeat(3, 1fr);
-      gap: 10px;
-    }
-
-    .meta-box {
-      background: rgba(255, 255, 255, 0.03);
-      border: 1px solid var(--border-color);
-      padding: 10px 12px;
-      border-radius: var(--radius-md);
-    }
-
-    .meta-label {
-      font-size: 0.72rem;
-      text-transform: uppercase;
-      color: var(--text-muted);
-      letter-spacing: 0.5px;
-      display: block;
-    }
-
-    .meta-value {
-      font-size: 0.92rem;
-      font-weight: 700;
-      color: #fff;
-    }
-
-    /* ประวัติตัวละคร */
-    .section-title {
-      font-size: 0.82rem;
-      font-weight: 700;
-      text-transform: uppercase;
-      letter-spacing: 1px;
-      color: var(--text-muted);
-      margin-bottom: 8px;
-    }
-
-    .card-bio {
-      font-size: 0.94rem;
-      color: #d1d5db;
-      line-height: 1.65;
-    }
-
-    /* ค่าสถานะ (Stats Bars) */
-    .stats-list {
-      display: flex;
-      flex-direction: column;
-      gap: 10px;
-    }
-
-    .stat-row {
-      display: grid;
-      grid-template-columns: 90px 1fr 40px;
-      align-items: center;
-      gap: 10px;
-      font-size: 0.85rem;
-    }
-
-    .stat-name {
-      font-weight: 600;
-      color: #e5e7eb;
-    }
-
-    .stat-bar-bg {
-      width: 100%;
-      height: 8px;
-      background: rgba(255, 255, 255, 0.08);
-      border-radius: 999px;
-      overflow: hidden;
-    }
-
-    .stat-bar-fill {
-      height: 100%;
-      background: var(--card-accent, var(--accent));
-      border-radius: 999px;
-      width: 0%;
-      transition: width 0.6s cubic-bezier(0.22, 1, 0.36, 1);
-    }
-
-    .stat-val {
-      text-align: right;
-      font-weight: 700;
-      color: var(--text-muted);
-    }
-
-    /* ทักษะพิเศษ (Skills / Tags) */
-    .skills-wrap {
-      display: flex;
-      flex-wrap: wrap;
-      gap: 8px;
-    }
-
-    .skill-tag {
-      padding: 5px 12px;
-      border-radius: 8px;
-      font-size: 0.82rem;
-      font-weight: 600;
-      background: rgba(255, 255, 255, 0.05);
-      border: 1px solid var(--border-color);
-      color: #e5e7eb;
-    }
-
-    /* รองรับหน้าจอมือถือ (Responsive) */
-    @media (max-width: 768px) {
-      .character-card {
-        grid-template-columns: 1fr;
-        max-height: 92vh;
-        overflow-y: auto;
-      }
-      .card-visual {
-        height: 260px;
-        border-right: none;
-        border-bottom: 1px solid var(--border-color);
-      }
-      .card-details {
-        overflow-y: visible;
-        padding: 24px 20px;
-      }
-    }
-  </style>
-</head>
-<body>
-
-  <!-- ส่วนหัวเว็บไซต์ -->
-  <header>
-    <span class="badge-header">HCO DATA 1.0</span>
-    <h1>Hermetic Constellation Order</h1>
-    <p>ระบบฐานข้อมูลสมาชิกในองค์กร HCO คลิกที่การ์ดสมาชิกเพื่อเปิดดูข้อมูล</p>
-
-    <div class="controls">
-      <div class="search-box">
-        <input type="text" id="searchInput" placeholder="ค้นหาชื่อ, โค้ดเนม หรือสายงาน..." />
-      </div>
-      <div class="filter-group" id="filterGroup">
-        <button class="filter-btn active" data-role="ALL">ทั้งหมด</button>
-        <button class="filter-btn" data-role="Vanguard">Angelo</button>
-        <button class="filter-btn" data-role="Tactician">WhiteForce</button>
-        <button class="filter-btn" data-role="Specialist">Specialist</button>
-        <button class="filter-btn" data-role="Support">Support</button>
-        <button class="filter-btn" data-role="Explorer">Explorer</button>
-      </div>
-    </div>
-  </header>
-
-  <!-- ตารางแสดงผลสมาชิก -->
-  <main class="container">
-    <div class="roster-grid" id="rosterGrid"></div>
-  </main>
-
-  <!-- หน้าต่าง Modal แสดงการ์ดตัวละครเมื่อคลิก -->
-  <div class="modal-overlay" id="cardModal" aria-hidden="true">
-    <div class="character-card" id="characterCard">
-      <button class="close-btn" id="closeModalBtn" title="ปิดหน้าต่าง">&times;</button>
-
-      <!-- ฝั่งซ้าย: รูปและคำคม -->
-      <div class="card-visual">
-        <img src="" alt="Character Portrait" class="card-visual-img" id="modalImg" />
-        <div class="card-visual-overlay">
-          <span class="card-id-badge" id="modalIdBadge">ID-001</span>
-          <p class="card-quote" id="modalQuote">"คำคมประจำตัวละคร"</p>
-        </div>
-      </div>
-
-      <!-- ฝั่งขวา: ข้อมูลตัวละคร -->
-      <div class="card-details">
-        <div class="card-header-info">
-          <div class="card-role-label" id="modalRole">ROLE</div>
-          <h2 class="card-title-name" id="modalName">Character Name</h2>
-          <div class="card-subtitle" id="modalAlias">Codename / Alias</div>
-        </div>
-
-        <div class="meta-grid">
-          <div class="meta-box">
-            <span class="meta-label">สังกัด / หน่วย</span>
-            <span class="meta-value" id="modalFaction">-</span>
-          </div>
-          <div class="meta-box">
-            <span class="meta-label">ระดับ (Rank)</span>
-            <span class="meta-value" id="modalRank">-</span>
-          </div>
-          <div class="meta-box">
-            <span class="meta-label">สถานะ</span>
-            <span class="meta-value" id="modalStatus">-</span>
-          </div>
-        </div>
-
-        <div>
-          <div class="section-title">ประวัติและข้อมูล (Biography)</div>
-          <p class="card-bio" id="modalBio"></p>
-        </div>
-
-        <div>
-          <div class="section-title">ค่าความสามารถ (Parameters)</div>
-          <div class="stats-list" id="modalStats"></div>
-        </div>
-
-        <div>
-          <div class="section-title">ความสามารถพิเศษ / ทักษะ (Skills)</div>
-          <div class="skills-wrap" id="modalSkills"></div>
-        </div>
-      </div>
-    </div>
-  </div>
-
-  <script>
-    /* =========================================================================
-       ส่วนข้อมูลสมาชิก (MODIFY ข้อมูลตัวละครได้ที่นี่ที่เดียว!)
-       - สามารถเปลี่ยนชื่อ, ตำแหน่ง, สีประจำตัว (color), รูปภาพ (image) ได้ทันที
-       - หากมีไฟล์รูปของตัวเอง ให้เปลี่ยนค่า image เป็น path รูป เช่น "images/char01.png"
-         หรือ URL ของรูปได้เลย
-       ========================================================================= */
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>วันนี้จะดวงดีไหมน้าา ✨</title>
+    <!-- Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- Google Fonts: Kanit & Prompt for clean Thai typography -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Kanit:wght@300;400;500;600;700&family=Prompt:wght@300;400;500;600;700&display=swap" rel="stylesheet">
     
-    // ฟังก์ชันสร้างภาพ SVG Placeholder อัตโนมัติ (ใช้กรณีที่ยังไม่ได้ใส่ลิงก์รูปจริง)
-    function createPlaceholderAvatar(initials, bgHex, accentHex) {
-      const svg = `
-      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 400 500" width="100%" height="100%">
-        <defs>
-          <linearGradient id="g-${initials}" x1="0%" y1="0%" x2="100%" y2="100%">
-            <stop offset="0%" stop-color="${bgHex}" />
-            <stop offset="100%" stop-color="#0b0d14" />
-          </linearGradient>
-        </defs>
-        <rect width="400" height="500" fill="url(#g-${initials})" />
-        <circle cx="200" cy="190" r="85" fill="${accentHex}" opacity="0.18" />
-        <circle cx="200" cy="175" r="52" fill="${accentHex}" opacity="0.85" />
-        <path d="M105 370 C105 285, 295 285, 295 370 Z" fill="${accentHex}" opacity="0.65" />
-        <text x="200" y="445" font-family="sans-serif" font-size="22" font-weight="bold" fill="#ffffff" opacity="0.35" text-anchor="middle" letter-spacing="4">CHARACTER ART</text>
-      </svg>`;
-      return "data:image/svg+xml;utf8," + encodeURIComponent(svg);
-    }
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    fontFamily: {
+                        sans: ['Prompt', 'Kanit', 'sans-serif'],
+                    },
+                    keyframes: {
+                        floatSlow: {
+                            '0%, 100%': { transform: 'translateY(0px) rotate(0deg)' },
+                            '50%': { transform: 'translateY(-10px) rotate(3deg)' },
+                        },
+                        popIn: {
+                            '0%': { opacity: '0', transform: 'scale(0.85) translateY(16px)' },
+                            '100%': { opacity: '1', transform: 'scale(1) translateY(0)' },
+                        },
+                        cloverPulse: {
+                            '0%, 100%': { transform: 'scale(1) rotate(0deg)', filter: 'drop-shadow(0 0 12px rgba(16, 185, 129, 0.8))' },
+                            '50%': { transform: 'scale(1.14) rotate(4deg)', filter: 'drop-shadow(0 0 26px rgba(251, 191, 36, 0.95))' },
+                        },
+                        spinSlow: {
+                            '0%': { transform: 'rotate(0deg)' },
+                            '100%': { transform: 'rotate(360deg)' },
+                        },
+                        spinReverseSlow: {
+                            '0%': { transform: 'rotate(360deg)' },
+                            '100%': { transform: 'rotate(0deg)' },
+                        },
+                    },
+                    animation: {
+                        'float-slow': 'floatSlow 4s ease-in-out infinite',
+                        'pop-in': 'popIn 0.35s cubic-bezier(0.16, 1, 0.3, 1) forwards',
+                        'clover-pulse': 'cloverPulse 2.2s ease-in-out infinite',
+                        'spin-slow': 'spinSlow 10s linear infinite',
+                        'spin-reverse-slow': 'spinReverseSlow 7s linear infinite',
+                    }
+                }
+            }
+        }
+    </script>
 
-    const membersData = [
-      {
-        id: "MEM-001",
-        name: "Chernikah",
-        alias: "โค้ดเนม: ---",
-        role: "Explorer",
-        rank: "SSR",
-        faction: "Angelo",
-        status: "Active",
-        color: "#6366f1", // สีประจำตัวละคร (Indigo)
-        image: createPlaceholderAvatar("KV", "#1e1b4b", "#6366f1"),
-        quote: "ไปข้าวกัน :DDDD",
-        bio: "อดีตทีม Primary ในตำนานผู้มีชื่อเสียงว่าเป็นผู้ที่เร็วที่สุดในวงการผู้ใช้เนบิวลา ผู้เคลื่อนไหวได้ได้รวดเร็วและพลังทำลายล้างมหาศาล อาจารย์เณอนิกา",
-        stats: [
-          { label: "Power", value: 320 },
-          { label: "Speed", value: 390 },
-          { label: "Technique", value: 88 },
-          { label: "Defense", value: 70 },
-          { label: "Intelligent", value: 156 }
-        ],
-        skills: ["Blink Strike", "Counter Stance", "Tactical Rush"]
-      },
-      {
-        id: "MEM-002",
-        name: "Lyra Vex",
-        alias: "โค้ดเนม: Cipher Weaver",
-        role: "Tactician",
-        rank: "SSR",
-        faction: "Oracle Network",
-        status: "Active",
-        color: "#ec4899", // สีประจำตัวละคร (Pink)
-        image: createPlaceholderAvatar("LV", "#3b0764", "#ec4899"),
-        quote: "ทุกอย่างในโลกนี้ล้วนเป็นข้อมูล ขึ้นอยู่กับว่าใครจะเป็นคนเขียนสมการ",
-        bio: "นักวางกลยุทธ์และผู้เชี่ยวชาญด้านโครงข่ายข้อมูลระดับสูง สามารถวิเคราะห์ความเป็นไปได้ของสนามรบแบบเรียลไทม์ และควบคุมโดรนสื่อสารเพื่อสร้างความได้เปรียบให้กับสมาชิกในทีม",
-        stats: [
-          { label: "Power", value: 55 },
-          { label: "Speed", value: 78 },
-          { label: "Technique", value: 99 },
-          { label: "Defense", value: 65 }
-        ],
-        skills: ["Neural Override", "Hologram Decoy", "Data Scan"]
-      },
-      {
-        id: "MEM-003",
-        name: "Orion Kade",
-        alias: "โค้ดเนม: Iron Bastion",
-        role: "Vanguard",
-        rank: "SR",
-        faction: "Titan Forge",
-        status: "Active",
-        color: "#f59e0b", // สีประจำตัวละคร (Amber)
-        image: createPlaceholderAvatar("OK", "#451a03", "#f59e0b"),
-        quote: "ตราบใดที่โล่ของฉันยังตั้งอยู่ จะไม่มีใครผ่านไปได้",
-        bio: "ผู้เชี่ยวชาญด้านเกราะหนักและสนามพลังป้องกัน ทำหน้าที่เป็นปราการเหล็กคอยปกป้องเพื่อนร่วมทีมจากการโจมตีรุนแรง มีนิสัยสุขุม รอบคอบ และเป็นที่พึ่งพาได้ในยามวิกฤต",
-        stats: [
-          { label: "Power", value: 85 },
-          { label: "Speed", value: 50 },
-          { label: "Technique", value: 72 },
-          { label: "Defense", value: 98 }
-        ],
-        skills: ["Aegis Barrier", "Ground Slam", "Fortify"]
-      },
-      {
-        id: "MEM-004",
-        name: "Sora Kurosawa",
-        alias: "โค้ดเนม: Nightfall",
-        role: "Specialist",
-        rank: "SSR",
-        faction: "Shadow Guild",
-        status: "Classified",
-        color: "#10b981", // สีประจำตัวละคร (Emerald)
-        image: createPlaceholderAvatar("SK", "#064e3b", "#10b981"),
-        quote: "เงาไม่เคยส่งเสียง แต่รู้ทุกอย่างที่เกิดขึ้นใต้แสงไฟ",
-        bio: "เจ้าหน้าที่ปฏิบัติการลับผู้ถนัดงานแทรกซึมและข่าวกรอง มีประวัติส่วนตัวเป็นความลับสุดยอด สามารถกลมกลืนไปกับสภาพแวดล้อมและจัดการเป้าหมายได้โดยไร้ร่องรอย",
-        stats: [
-          { label: "Power", value: 80 },
-          { label: "Speed", value: 98 },
-          { label: "Technique", value: 94 },
-          { label: "Defense", value: 60 }
-        ],
-        skills: ["Stealth Camo", "Silent Step", "Precision Mark"]
-      },
-      {
-        id: "MEM-005",
-        name: "Elena Rostova",
-        alias: "โค้ดเนม: Aurora Pulse",
-        role: "Support",
-        rank: "SR",
-        faction: "Bio-Med Corps",
-        status: "Active",
-        color: "#06b6d4", // สีประจำตัวละคร (Cyan)
-        image: createPlaceholderAvatar("ER", "#083344", "#06b6d4"),
-        quote: "หน้าที่ของฉันคือพาทุกคนกลับบ้านอย่างปลอดภัย",
-        bio: "แพทย์สนามและนักวิจัยนาโนเทคโนโลยี ผู้พัฒนาอุปกรณ์ฟื้นฟูสภาพร่างกายฉุกเฉินในสนามรบ นอกจากทักษะการรักษาแล้ว ยังสามารถปรับจูนคลื่นพลังงานเพื่อเสริมสมรรถภาพให้ทีมได้อีกด้วย",
-        stats: [
-          { label: "Power", value: 48 },
-          { label: "Speed", value: 75 },
-          { label: "Technique", value: 92 },
-          { label: "Defense", value: 82 }
-        ],
-        skills: ["Nano Repair", "Vital Boost", "Cleanse Field"]
-      },
-      {
-        id: "MEM-006",
-        name: "Noah Sterling",
-        alias: "โค้ดเนม: Chrono Spark",
-        role: "Specialist",
-        rank: "SR",
-        faction: "Horizon Lab",
-        status: "Standby",
-        color: "#a855f7", // สีประจำตัวละคร (Purple)
-        image: createPlaceholderAvatar("NS", "#2e1065", "#a855f7"),
-        quote: "ทฤษฎีจะไม่มีความหมายเลย ถ้าเราไม่กล้าทดลองมันในสนามจริง!",
-        bio: "นักประดิษฐ์หนุ่มอัจฉริยะผู้ออกแบบอาวุธพลังงานต้นแบบ ชื่นชอบการดัดแปลงอุปกรณ์แปลกใหม่เพื่อใช้สร้างจังหวะเหนือความคาดหมายในการต่อสู้",
-        stats: [
-          { label: "Power", value: 88 },
-          { label: "Speed", value: 82 },
-          { label: "Technique", value: 90 },
-          { label: "Defense", value: 64 }
-        ],
-        skills: ["Overcharge", "Gravity Trap", "EMP Burst"]
-      }
-    ];
+    <style>
+        body {
+            font-family: 'Prompt', 'Kanit', sans-serif;
+            overflow-x: hidden;
+            user-select: none;
+        }
+        
+        /* Custom Scrollbar for History Drawer */
+        .custom-scroll::-webkit-scrollbar {
+            width: 6px;
+        }
+        .custom-scroll::-webkit-scrollbar-track {
+            background: rgba(241, 245, 249, 0.6);
+            border-radius: 8px;
+        }
+        .custom-scroll::-webkit-scrollbar-thumb {
+            background: rgba(148, 163, 184, 0.5);
+            border-radius: 8px;
+        }
+        .custom-scroll::-webkit-scrollbar-thumb:hover {
+            background: rgba(100, 116, 139, 0.7);
+        }
 
-    /* =========================================================================
-       ส่วนควบคุมการทำงานของหน้าเว็บ (JavaScript Logic)
-       ========================================================================= */
-    const rosterGrid = document.getElementById("rosterGrid");
-    const searchInput = document.getElementById("searchInput");
-    const filterButtons = document.querySelectorAll(".filter-btn");
-    const cardModal = document.getElementById("cardModal");
-    const characterCard = document.getElementById("characterCard");
-    const closeModalBtn = document.getElementById("closeModalBtn");
+        /* Subtle Slot Machine Text Shuffle Animation */
+        @keyframes textShuffle {
+            0% { opacity: 0.3; transform: translateY(-6px); filter: blur(2px); }
+            100% { opacity: 1; transform: translateY(0); filter: blur(0); }
+        }
+        .shuffle-anim {
+            animation: textShuffle 0.22s ease-out forwards;
+        }
 
-    let currentRoleFilter = "ALL";
-    let currentSearchQuery = "";
+        @keyframes clueDigitGlitch {
+            0%, 84%, 100% {
+                transform: translate(0, 0) skewX(0deg);
+                opacity: 1;
+                filter: none;
+                clip-path: inset(0 0 0 0);
+            }
+            86% {
+                transform: translate(-1px, 0) skewX(-6deg);
+                opacity: 0.78;
+                text-shadow: 1px 0 rgba(0, 0, 0, 0.72);
+                clip-path: inset(12% 0 58% 0);
+            }
+            88% {
+                transform: translate(1px, 0) skewX(4deg);
+                opacity: 0.92;
+                text-shadow: -1px 0 rgba(100, 116, 139, 0.5);
+                clip-path: inset(48% 0 18% 0);
+            }
+            90% {
+                transform: translate(-0.5px, 0);
+                opacity: 0.72;
+                clip-path: inset(72% 0 8% 0);
+            }
+            92% {
+                transform: translate(0, 0) skewX(0deg);
+                opacity: 1;
+                filter: none;
+                clip-path: inset(0 0 0 0);
+            }
+        }
 
-    // ฟังก์ชันสร้างรายการการ์ดในหน้าแรก
-    function renderRoster() {
-      rosterGrid.innerHTML = "";
+        .constellation-clue {
+            position: relative;
+            display: inline-flex;
+            align-items: center;
+            min-height: 23px;
+            padding: 1px 4px;
+            overflow: visible;
+            color: #0f172a;
+            font-family: 'Prompt', 'Kanit', monospace;
+            font-size: 0.75rem;
+            font-weight: 700;
+            letter-spacing: 0.02em;
+            border: 0;
+            border-radius: 4px;
+            background: transparent;
+            box-shadow: none;
+        }
 
-      const filtered = membersData.filter((member) => {
-        const matchRole = currentRoleFilter === "ALL" || member.role === currentRoleFilter;
-        const query = currentSearchQuery.toLowerCase();
-        const matchSearch =
-          member.name.toLowerCase().includes(query) ||
-          member.alias.toLowerCase().includes(query) ||
-          member.role.toLowerCase().includes(query) ||
-          member.id.toLowerCase().includes(query);
-        return matchRole && matchSearch;
-      });
+        .constellation-clue::before {
+            content: '';
+            width: 2px;
+            height: 2px;
+            margin-right: 3px;
+            border-radius: 999px;
+            background: #334155;
+            opacity: 0.8;
+        }
 
-      if (filtered.length === 0) {
-        rosterGrid.innerHTML = `<p style="grid-column: 1/-1; text-align:center; color:#9ca3af; padding: 40px 0;">ไม่พบข้อมูลสมาชิกที่ค้นหา</p>`;
-        return;
-      }
+        .constellation-clue-digit {
+            display: inline-block;
+            min-width: 0.65em;
+            text-align: center;
+            color: #0f172a;
+            animation: clueDigitGlitch 5.6s steps(1, end) infinite;
+            filter: none;
+        }
 
-      filtered.forEach((member) => {
-        const cardEl = document.createElement("div");
-        cardEl.className = "member-item";
-        cardEl.style.setProperty("--item-color", member.color);
+        .constellation-clue-digit:nth-child(2) { animation-delay: 0.18s; }
+        .constellation-clue-digit:nth-child(4) { animation-delay: 0.36s; }
+        .constellation-clue-digit:nth-child(5) { animation-delay: 0.54s; }
+        .constellation-clue-colon {
+            margin: 0 1px;
+            color: #334155;
+        }
 
-        cardEl.innerHTML = `
-          <div class="member-thumb">
-            <img src="${member.image}" alt="${member.name}" />
-            <span class="member-id-tag">${member.id}</span>
-            <span class="member-rank-tag">${member.rank}</span>
-          </div>
-          <div class="member-info">
-            <div>
-              <div class="member-role">${member.role}</div>
-              <div class="member-name">${member.name}</div>
-              <div class="member-alias">${member.alias}</div>
+        /* Ultra-Powerful Legendary Clover Aura & Effects */
+        @keyframes legendaryAura {
+            0%, 100% {
+                box-shadow: 0 0 20px rgba(16, 185, 129, 0.55), 0 0 45px rgba(245, 158, 11, 0.35), inset 0 0 15px rgba(255, 255, 255, 0.5);
+                transform: translateY(0px) scale(1);
+            }
+            50% {
+                box-shadow: 0 0 35px rgba(16, 185, 129, 0.9), 0 0 70px rgba(251, 191, 36, 0.65), inset 0 0 25px rgba(254, 240, 138, 0.75);
+                transform: translateY(-3px) scale(1.04);
+            }
+        }
+        .legendary-clover-card {
+            animation: legendaryAura 2.4s ease-in-out infinite;
+        }
+
+        @keyframes sparkleTwinkle {
+            0%, 100% { transform: scale(0.4) rotate(0deg); opacity: 0.3; }
+            50% { transform: scale(1.25) rotate(90deg); opacity: 1; }
+        }
+        .sparkle-star-1 { animation: sparkleTwinkle 1.6s ease-in-out infinite; }
+        .sparkle-star-2 { animation: sparkleTwinkle 2.1s ease-in-out infinite 0.5s; }
+        .sparkle-star-3 { animation: sparkleTwinkle 1.8s ease-in-out infinite 1s; }
+
+        .ssr-multiplier-text {
+            background: linear-gradient(180deg, #fffbeb 0%, #fde047 35%, #f59e0b 75%, #b45309 100%);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            filter: drop-shadow(0 2px 10px rgba(245, 158, 11, 0.75)) drop-shadow(0 1px 2px rgba(0, 0, 0, 0.5));
+        }
+
+        .halftone-pattern {
+            background-image:
+                radial-gradient(circle, rgba(100, 116, 139, 0.16) 0 1.5px, transparent 1.8px),
+                radial-gradient(circle, rgba(16, 185, 129, 0.08) 0 1px, transparent 1.3px);
+            background-position: 0 0, 9px 9px;
+            background-size: 18px 18px, 18px 18px;
+            mask-image: linear-gradient(to bottom, transparent 0%, rgba(0, 0, 0, 0.5) 12%, rgba(0, 0, 0, 0.5) 88%, transparent 100%);
+        }
+
+        .random-number-bg {
+            position: absolute;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            width: 18px;
+            height: 18px;
+            color: rgba(71, 85, 105, 0.22);
+            font-size: 0.72rem;
+            font-weight: 800;
+            line-height: 1;
+            transform: rotate(-4deg);
+            user-select: none;
+            cursor: default;
+            transition: color 0.18s ease, filter 0.18s ease, transform 0.18s ease;
+        }
+
+        .random-number-bg:hover {
+            color: rgba(30, 41, 59, 0.95);
+            filter: drop-shadow(0 1px 3px rgba(15, 23, 42, 0.22));
+            transform: rotate(0deg) scale(1.35);
+            z-index: 8;
+        }
+
+        .random-number-bg.constellation-digit {
+            color: rgba(15, 23, 42, 1);
+            filter: drop-shadow(0 0 8px rgba(15, 23, 42, 0.82));
+            text-shadow: 0 0 5px rgba(15, 23, 42, 0.55);
+            font-size: 0.84rem;
+            z-index: 7;
+            cursor: pointer;
+            pointer-events: auto;
+        }
+
+        .constellation-digit.constellation-digit-fade {
+            pointer-events: none;
+            animation: constellationDigitFade 0.42s ease-out forwards;
+        }
+
+        @keyframes constellationDigitFade {
+            0% {
+                opacity: 1;
+                transform: rotate(0deg) scale(1.35);
+                filter: drop-shadow(0 0 10px rgba(15, 23, 42, 0.9));
+            }
+            100% {
+                opacity: 0;
+                transform: rotate(0deg) scale(0.55);
+                filter: blur(4px);
+            }
+        }
+
+        header,
+        main,
+        footer,
+        aside {
+            transition: filter 0.18s ease;
+        }
+
+        body:has(.random-number-bg:hover) header,
+        body:has(.random-number-bg:hover) main,
+        body:has(.random-number-bg:hover) footer,
+        body:has(.random-number-bg:hover) aside {
+            filter: blur(1.25px);
+        }
+
+        #constellationLines {
+            position: fixed;
+            inset: 0;
+            width: 100%;
+            height: 100%;
+            pointer-events: none;
+            z-index: 4;
+        }
+
+        #constellationLines line {
+            stroke: #111827;
+            stroke-width: 1.5;
+            stroke-linecap: round;
+            opacity: 0;
+        }
+
+        #constellationLines .constellation-line {
+            animation: constellationDraw 0.7s ease-out forwards;
+        }
+
+        @keyframes constellationDraw {
+            to { opacity: 0.72; }
+        }
+    </style>
+</head>
+<body class="bg-gradient-to-br from-slate-50 via-stone-50 to-emerald-50/40 min-h-screen text-slate-800 relative flex flex-col justify-between">
+
+    <!-- Background Ambient Glows (Minimalist & Airy) -->
+    <div class="fixed inset-0 pointer-events-none overflow-hidden z-[25]">
+        <div class="absolute -top-28 -right-28 w-96 h-96 bg-emerald-100/40 rounded-full blur-3xl"></div>
+        <div class="absolute -bottom-28 -left-28 w-96 h-96 bg-amber-100/40 rounded-full blur-3xl"></div>
+        <div class="halftone-pattern absolute inset-0 opacity-60"></div>
+        <span id="halftoneNumbers" class="absolute inset-0"></span>
+    </div>
+    <svg id="constellationLines" aria-hidden="true"></svg>
+
+    <!-- Celebration Canvas & Birthday Cake Overlay (Triggered on Accept Blessing) -->
+    <canvas id="celebrationCanvas" class="fixed inset-0 pointer-events-none z-50 hidden"></canvas>
+    
+    <div id="birthdayCakeOverlay" class="fixed inset-0 pointer-events-auto z-40 hidden flex flex-col items-center justify-center bg-white/40 backdrop-blur-sm transition-opacity duration-500 cursor-pointer" aria-label="คลิกเพื่อปิดหน้าเฉลิมฉลอง">
+        <div class="flex flex-col items-center">
+            <!-- Custom Animated SVG Birthday Celebration Cake -->
+            <div class="relative w-48 h-48 sm:w-56 sm:h-56 flex items-center justify-center">
+                <!-- Glowing Aura Behind Cake -->
+                <div class="absolute inset-0 bg-gradient-to-tr from-amber-300/50 via-pink-300/40 to-emerald-300/50 rounded-full blur-2xl animate-pulse"></div>
+                
+                <svg viewBox="0 0 200 200" class="w-full h-full drop-shadow-xl relative z-10">
+                    <!-- Plate -->
+                    <ellipse cx="100" cy="170" rx="75" ry="12" fill="#e2e8f0" />
+                    <ellipse cx="100" cy="167" rx="68" ry="9" fill="#f8fafc" />
+                    
+                    <!-- Bottom Cake Tier -->
+                    <rect x="42" y="118" width="116" height="48" rx="10" fill="#fde68a" stroke="#f59e0b" stroke-width="2" />
+                    <!-- Bottom Tier Frosting Drips -->
+                    <path d="M42 126 Q55 140 68 126 T94 126 T120 126 T146 126 T158 126 L158 118 L42 118 Z" fill="#fb7185" />
+                    
+                    <!-- Sprinkles on Bottom Tier -->
+                    <circle cx="65" cy="148" r="3" fill="#34d399" />
+                    <circle cx="88" cy="152" r="3" fill="#60a5fa" />
+                    <circle cx="115" cy="145" r="3" fill="#f472b6" />
+                    <circle cx="138" cy="150" r="3" fill="#a78bfa" />
+                    <circle cx="100" cy="138" r="3" fill="#fbbf24" />
+
+                    <!-- Top Cake Tier -->
+                    <rect x="58" y="80" width="84" height="40" rx="8" fill="#fef3c7" stroke="#f59e0b" stroke-width="2" />
+                    <!-- Top Tier Cream Frosting -->
+                    <path d="M56 88 Q68 100 80 88 T104 88 T128 88 T144 88 L144 78 Q100 72 56 78 Z" fill="#f43f5e" />
+
+                    <!-- Cherries on Top -->
+                    <circle cx="72" cy="76" r="5" fill="#e11d48" />
+                    <circle cx="100" cy="74" r="5" fill="#e11d48" />
+                    <circle cx="128" cy="76" r="5" fill="#e11d48" />
+
+                    <!-- 3 Candles -->
+                    <!-- Left Candle -->
+                    <rect x="78" y="48" width="8" height="30" rx="3" fill="#6ee7b7" stroke="#10b981" stroke-width="1.5" />
+                    <path d="M82 32 C77 40 78 46 82 47 C86 46 87 40 82 32 Z" fill="#fbbf24" />
+                    <circle cx="82" cy="42" r="3" fill="#fef08a" />
+
+                    <!-- Center Candle -->
+                    <rect x="96" y="42" width="8" height="34" rx="3" fill="#93c5fd" stroke="#3b82f6" stroke-width="1.5" />
+                    <path d="M100 25 C95 34 96 40 100 41 C104 40 105 34 100 25 Z" fill="#f59e0b" />
+                    <circle cx="100" cy="35" r="3.5" fill="#fef08a" />
+
+                    <!-- Right Candle -->
+                    <rect x="114" y="48" width="8" height="30" rx="3" fill="#f9a8d4" stroke="#ec4899" stroke-width="1.5" />
+                    <path d="M118 32 C113 40 114 46 118 47 C122 46 123 40 118 32 Z" fill="#fbbf24" />
+                    <circle cx="118" cy="42" r="3" fill="#fef08a" />
+                </svg>
             </div>
-            <div class="click-hint">
-              <span>ดูการ์ดตัวละคร</span>
-              <span>&rarr;</span>
+
+            <div class="mt-2 bg-white/95 px-6 py-3 rounded-2xl shadow-xl border border-emerald-200 text-center">
+                <p class="text-xl sm:text-2xl font-bold text-transparent bg-clip-text bg-gradient-to-r from-emerald-600 via-teal-600 to-amber-500">
+                    รับคำอวยพรแล้ว อย่าลืมคิดบวกล่ะ!!
+                </p>
+                <p id="celebrationCloverNotice" class="text-sm text-emerald-700 font-medium mt-1">
+                    ได้รับใบโคลเวอร์นำโชคเพิ่ม +1 🍀
+                </p>
             </div>
-          </div>
-        `;
+        </div>
+    </div>
 
-        cardEl.addEventListener("click", () => openCharacterModal(member));
-        rosterGrid.appendChild(cardEl);
-      });
-    }
+    <!-- TOP NAVIGATION BAR -->
+    <header class="relative z-20 w-full px-5 py-4 sm:px-8 sm:py-6 flex items-center justify-between">
+        <!-- Top-Left Hamburger Menu Button (3 Horizontal Lines) -->
+        <button 
+            id="menuToggleBtn" 
+            aria-label="เปิดบันทึกดวงและคำแนะนำ"
+            class="group relative flex items-center gap-3 p-3 rounded-2xl bg-white/80 hover:bg-white shadow-sm hover:shadow-md border border-slate-200/80 transition-all duration-200 active:scale-95"
+            title="บันทึกดวงและคำแนะนำทั้งหมด"
+        >
+            <div class="flex flex-col justify-between w-6 h-4">
+                <span class="block h-0.5 w-full bg-slate-700 rounded-full transition-transform duration-200 group-hover:scale-x-105"></span>
+                <span class="block h-0.5 w-full bg-slate-700 rounded-full transition-transform duration-200"></span>
+                <span class="block h-0.5 w-full bg-slate-700 rounded-full transition-transform duration-200 group-hover:scale-x-95"></span>
+            </div>
+            <span class="text-sm font-medium text-slate-600 hidden sm:inline">บันทึกดวงของฉัน</span>
+            <!-- History Count Badge -->
+            <span id="historyCountBadge" class="inline-flex items-center justify-center px-2 py-0.5 text-xs font-semibold rounded-full bg-emerald-100 text-emerald-700">
+                0
+            </span>
+        </button>
 
-    // ฟังก์ชันเปิดหน้าต่างการ์ดตัวละคร (Modal)
-    function openCharacterModal(member) {
-      characterCard.style.setProperty("--card-accent", member.color);
-      document.getElementById("modalImg").src = member.image;
-      document.getElementById("modalIdBadge").textContent = member.id;
-      document.getElementById("modalQuote").textContent = `"${member.quote}"`;
-      document.getElementById("modalRole").textContent = member.role;
-      document.getElementById("modalName").textContent = member.name;
-      document.getElementById("modalAlias").textContent = member.alias;
-      document.getElementById("modalFaction").textContent = member.faction;
-      document.getElementById("modalRank").textContent = member.rank;
-      document.getElementById("modalStatus").textContent = member.status;
-      document.getElementById("modalBio").textContent = member.bio;
+        <button
+            id="soundToggleBtn"
+            type="button"
+            class="flex items-center justify-center w-11 h-11 rounded-2xl bg-white/80 hover:bg-white shadow-sm hover:shadow-md border border-slate-200/80 text-slate-600 transition-all duration-200 active:scale-95"
+            aria-label="ปิดเสียงทั่วไป"
+            title="ปิดเสียงทั่วไป"
+        >
+            <svg id="soundOnIcon" xmlns="http://www.w3.org/2000/svg" class="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+                <path stroke-linecap="round" stroke-linejoin="round" d="M11 5L6 9H2v6h4l5 4V5zm4.5 3.5a5 5 0 010 7M18 6a8 8 0 010 12" />
+            </svg>
+            <svg id="soundOffIcon" xmlns="http://www.w3.org/2000/svg" class="w-5 h-5 hidden" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+                <path stroke-linecap="round" stroke-linejoin="round" d="M11 5L6 9H2v6h4l5 4V5zm4 4l6 6m0-6l-6 6" />
+            </svg>
+        </button>
 
-      // สร้างหลอดค่าพลัง (Stats)
-      const statsContainer = document.getElementById("modalStats");
-      statsContainer.innerHTML = "";
-      member.stats.forEach((st) => {
-        const row = document.createElement("div");
-        row.className = "stat-row";
-        row.innerHTML = `
-          <span class="stat-name">${st.label}</span>
-          <div class="stat-bar-bg">
-            <div class="stat-bar-fill" style="width: 0%" data-target="${st.value}%"></div>
-          </div>
-          <span class="stat-val">${st.value}</span>
-        `;
-        statsContainer.appendChild(row);
-      });
+    </header>
 
-      // สร้างป้ายทักษะ (Skills)
-      const skillsContainer = document.getElementById("modalSkills");
-      skillsContainer.innerHTML = "";
-      member.skills.forEach((skill) => {
-        const span = document.createElement("span");
-        span.className = "skill-tag";
-        span.textContent = skill;
-        skillsContainer.appendChild(span);
-      });
+    <!-- SLIDE-OUT HISTORY SIDEBAR / DRAWER (Top-left 3 lines) -->
+    <div id="drawerBackdrop" class="fixed inset-0 bg-slate-900/30 backdrop-blur-xs z-30 hidden opacity-0 transition-opacity duration-300"></div>
+    
+    <aside id="historyDrawer" class="fixed top-0 left-0 h-full w-full max-w-md bg-white/95 backdrop-blur-md shadow-2xl border-r border-slate-200/80 z-40 transform -translate-x-full transition-transform duration-300 ease-in-out flex flex-col">
+        <!-- Drawer Header -->
+        <div class="p-5 sm:p-6 border-b border-slate-100 flex items-center justify-between bg-gradient-to-r from-emerald-50/60 to-transparent">
+            <div class="flex items-center gap-2.5">
+                <span class="text-2xl">🍀</span>
+                <div>
+                    <h2 class="text-lg font-bold text-slate-800">บันทึกดวงและคำแนะนำ</h2>
+                    <p class="text-xs text-slate-500">คำอวยพรทั้งหมดที่คุณกดรับไว้</p>
+                </div>
+            </div>
+            <button id="closeDrawerBtn" class="p-2 rounded-xl text-slate-400 hover:text-slate-700 hover:bg-slate-100 transition-colors" aria-label="ปิดหน้าต่าง">
+                <svg xmlns="http://www.w3.org/2000/svg" class="w-6 h-6" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+                    <path stroke-linecap="round" stroke-linejoin="round" d="M6 18L18 6M6 6l12 12" />
+                </svg>
+            </button>
+        </div>
 
-      cardModal.classList.add("open");
-      cardModal.setAttribute("aria-hidden", "false");
+        <!-- Summary Banner inside Drawer -->
+        <div class="px-5 py-3 bg-emerald-50/70 border-b border-emerald-100/80 flex items-center justify-between text-xs sm:text-sm">
+            <span class="text-emerald-800 font-medium">จำนวนใบโคลเวอร์สะสมทั้งหมด:</span>
+            <span id="drawerCloverTotal" class="font-bold text-emerald-700 bg-white px-3 py-1 rounded-full shadow-2xs border border-emerald-200">
+            </span>
+        </div>
 
-      // แอนิเมชันหลอดค่าสถานะวิ่งขึ้นเมื่อเปิดการ์ด
-      requestAnimationFrame(() => {
-        setTimeout(() => {
-          document.querySelectorAll(".stat-bar-fill").forEach((bar) => {
-            bar.style.width = bar.getAttribute("data-target");
-          });
-        }, 60);
-      });
-    }
+        <!-- Saved Fortunes List -->
+        <div id="historyListContainer" class="flex-1 overflow-y-auto p-5 space-y-4 custom-scroll">
+            <!-- Dynamically populated by JS -->
+        </div>
 
-    // ฟังก์ชันปิดการ์ด
-    function closeCharacterModal() {
-      cardModal.classList.remove("open");
-      cardModal.setAttribute("aria-hidden", "true");
-    }
+        <!-- Drawer Footer -->
+        <div class="p-4 border-t border-slate-100 bg-slate-50/60 flex items-center justify-between gap-3">
+            <button id="clearHistoryBtn" class="w-full py-2.5 px-4 rounded-xl text-xs font-medium text-rose-600 hover:bg-rose-50 border border-transparent hover:border-rose-200 transition-colors flex items-center justify-center gap-1.5">
+                <svg xmlns="http://www.w3.org/2000/svg" class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+                    <path stroke-linecap="round" stroke-linejoin="round" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
+                </svg>
+                <span>ล้างประวัติและรีเซ็ตใบโคลเวอร์</span>
+            </button>
+        </div>
+    </aside>
 
-    // Event Listeners
-    closeModalBtn.addEventListener("click", closeCharacterModal);
-    cardModal.addEventListener("click", (e) => {
-      if (e.target === cardModal) closeCharacterModal();
-    });
-    window.addEventListener("keydown", (e) => {
-      if (e.key === "Escape" && cardModal.classList.contains("open")) {
-        closeCharacterModal();
-      }
-    });
+    <!-- Constellation Success Screen -->
+    <div id="welcomeConstellationScreen" class="fixed inset-0 z-[60] hidden items-center justify-center bg-white">
+        <div id="welcomePasswordPanel" class="w-full max-w-md px-6 text-center">
+            <div class="mx-auto mb-6 flex h-20 w-20 items-center justify-center rounded-full border-2 border-black bg-black text-4xl text-white">
+                🍀
+            </div>
+            <h1 class="text-4xl sm:text-6xl font-black text-black tracking-tight">Welcome</h1>
+            <form id="welcomePasswordForm" class="mt-8 space-y-4">
+                <label for="welcomePasswordInput" class="block text-sm font-bold text-black">Password</label>
+                <input
+                    id="welcomePasswordInput"
+                    type="password"
+                    autocomplete="off"
+                    class="w-full rounded-xl border border-black bg-white px-4 py-3 text-center text-base font-bold text-black outline-none"
+                    placeholder="กรอกรหัสผ่าน"
+                />
+                <button type="submit" class="w-full rounded-xl bg-black px-5 py-3 text-sm font-bold text-white transition active:scale-[0.98]">
+                    ยืนยันรหัส
+                </button>
+                <p id="welcomePasswordError" class="min-h-5 text-sm font-medium text-black opacity-0">รหัสไม่ถูกต้อง</p>
+            </form>
+        </div>
+        <div id="welcomeSuccessPanel" class="hidden w-full max-w-xl px-6 text-center">
+            <h1 class="text-3xl font-black leading-relaxed text-black sm:text-5xl">
+                เก่งมาก ขอบคุณมากที่ทดลองเล่น Puzzle ของเรานะ เดี๋ยวมาพัฒนาต่อง่วงละ
+            </h1>
+            <audio id="welcomeSuccessMusic" loop preload="auto" src="King Gnu - AIZO.mp3"></audio>
+        </div>
+    </div>
 
-    searchInput.addEventListener("input", (e) => {
-      currentSearchQuery = e.target.value;
-      renderRoster();
-    });
+    <div id="easterEggScreen" class="fixed inset-0 z-[70] hidden items-center justify-center bg-slate-950/70 backdrop-blur-sm p-5">
+        <div class="w-full max-w-md rounded-3xl border border-slate-200 bg-white px-6 py-8 text-center shadow-2xl sm:px-8">
+            <div class="mx-auto mb-5 flex h-16 w-16 items-center justify-center rounded-full bg-slate-950 text-3xl text-white shadow-lg">
+                🍀
+            </div>
+            <h2 class="text-xl font-bold text-slate-900 sm:text-2xl">ยินดีด้วยวันนี้คุณได้รหัสมาแล้วล่ะ</h2>
+            <div class="mt-5 rounded-2xl border border-slate-200 bg-slate-50 px-4 py-4">
+                <p class="text-sm font-medium text-slate-500">Password</p>
+                <p class="mt-1 text-xl font-black tracking-wide text-slate-950 sm:text-2xl">Bright 123456789</p>
+                <button id="copyEasterEggPasswordBtn" type="button" class="mt-3 rounded-xl border border-slate-300 bg-white px-4 py-2 text-sm font-bold text-slate-950 transition hover:bg-slate-100 active:scale-95">
+                    คัดลอกรหัส
+                </button>
+                <p id="copyEasterEggPasswordStatus" class="mt-2 min-h-5 text-xs font-medium text-slate-500" aria-live="polite"></p>
+            </div>
+            <p class="mt-5 text-sm font-medium leading-relaxed text-slate-700">
+                เหลือแค่หาที่ใส่รหัสแล้ว อยู่ที่ไหนกันนะ
+            </p>
+            <button id="closeEasterEggBtn" type="button" class="mt-6 rounded-xl bg-slate-950 px-5 py-3 text-sm font-bold text-white transition hover:bg-slate-800 active:scale-95">
+                ปิด
+            </button>
+        </div>
+    </div>
 
-    filterButtons.forEach((btn) => {
-      btn.addEventListener("click", () => {
-        filterButtons.forEach((b) => b.classList.remove("active"));
-        btn.classList.add("active");
-        currentRoleFilter = btn.getAttribute("data-role");
-        renderRoster();
-      });
-    });
+    <!-- MAIN MINIMALIST QUESTION SCREEN -->
+    <main id="mainQuestionScreen" class="relative z-10 flex-1 flex flex-col items-center justify-center px-5 py-10 transition-all duration-500">
+        <div class="w-full max-w-lg mx-auto text-center space-y-8">
+            
+            <!-- Large Floating Clover Emoji -->
+            <div class="relative inline-flex items-center justify-center animate-float-slow" aria-label="Clover 4 ใบ">
+                <span class="text-7xl leading-none drop-shadow-sm select-none">🍀</span>
+                <span id="mainScreenCloverMultiplier" class="absolute left-full ml-1 top-1/2 -translate-y-1/2 text-lg sm:text-xl font-bold text-emerald-700 whitespace-nowrap">
+                </span>
+            </div>
 
-    // เริ่มต้นแสดงผล
-    renderRoster();
-  </script>
+            <!-- Main Question Heading -->
+            <div class="space-y-4">
+                <h1 class="text-3xl sm:text-5xl font-bold tracking-tight text-slate-800">
+                    วันนี้จะดวงดีไหมน้าา
+                </h1>
+                <p class="text-slate-400 text-sm sm:text-base font-light">
+                    พิมพ์สิ่งที่คุณกำลังจะทำต่อ แล้วมาดูกันว่าอะไรจะเกิดขึ้น!!
+                </p>
+            </div>
+
+            <!-- Minimalist Input Form -->
+            <form id="fortuneForm" class="w-fit max-w-full mx-auto space-y-4">
+                <div class="relative group flex justify-center">
+                    <input 
+                        type="text" 
+                        id="userAnswerInput" 
+                        placeholder="พิมพ์คำตอบของคุณที่นี่... (เช่น ดีมาก, ไม่แน่ใจ, ขอให้คิดบวกๆนะ)"
+                        autocomplete="off"
+                        size="52"
+                        style="field-sizing: content; width: auto; max-width: calc(100vw - 40px);"
+                        class="px-4 sm:px-6 py-3 sm:py-4 text-sm sm:text-base text-center bg-white/90 hover:bg-white focus:bg-white rounded-2xl border border-slate-200/90 focus:border-emerald-400 shadow-sm focus:shadow-lg focus:outline-none focus:ring-4 focus:ring-emerald-100/70 transition-all duration-200 placeholder:text-slate-300 text-slate-700"
+                    />
+                </div>
+
+                <div class="pt-2 flex flex-col sm:flex-row items-stretch sm:justify-center gap-3">
+                    <button 
+                        type="submit" 
+                        id="submitAnswerBtn"
+                        class="w-full sm:w-auto min-w-[220px] px-8 py-4 rounded-2xl bg-slate-900 hover:bg-emerald-600 text-white font-medium text-base shadow-md hover:shadow-xl hover:shadow-emerald-600/20 transition-all duration-200 active:scale-95 inline-flex items-center justify-center gap-2"
+                    >
+                        <span>ส่งคำตอบดูดวงวันนี้</span>
+                        <svg xmlns="http://www.w3.org/2000/svg" class="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+                            <path stroke-linecap="round" stroke-linejoin="round" d="M13 7l5 5m0 0l-5 5m5-5H6" />
+                        </svg>
+                    </button>
+                </div>
+            </form>
+
+        </div>
+    </main>
+
+    <!-- POPUP MODAL (AI Blessing & RNG Fortune) -->
+    <div id="blessingModalBackdrop" class="fixed inset-0 bg-slate-900/50 backdrop-blur-sm z-30 hidden items-center justify-center p-4 sm:p-6">
+        <div id="blessingModalCard" class="w-full max-w-xl bg-white rounded-3xl shadow-2xl border border-slate-100 overflow-hidden animate-pop-in relative">
+            
+            <!-- Top Decorative Gradient Bar -->
+            <div class="h-2.5 w-full bg-gradient-to-r from-emerald-400 via-amber-400 to-teal-500"></div>
+
+            <!-- Close Modal Button (Top Right) -->
+            <button id="closeModalBtn" class="absolute top-5 right-5 p-2 rounded-full text-slate-400 hover:text-slate-600 hover:bg-slate-100 transition-colors z-20" title="ปิดหน้าต่าง">
+                <svg xmlns="http://www.w3.org/2000/svg" class="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+                    <path stroke-linecap="round" stroke-linejoin="round" d="M6 18L18 6M6 6l12 12" />
+                </svg>
+            </button>
+
+            <div class="p-6 sm:p-8 space-y-5">
+                
+                <!-- AI Greeting Header -->
+                <div class="text-center space-y-1.5">
+                    <h2 class="text-2xl sm:text-3xl font-bold text-slate-800 leading-snug">
+                        ยินดีด้วย วันนี้ดวงดีมากเลย! 🎉
+                    </h2>
+                    <p id="modalUserEcho" class="text-xs sm:text-sm text-slate-500 bg-slate-50 inline-block px-3.5 py-1 rounded-xl border border-slate-200/60">
+                        จากคำตอบของคุณ: "..."
+                    </p>
+                </div>
+
+                    <!-- Dynamic RNG Content Box -->
+                    <div id="fortuneCardBox" class="mt-4 space-y-4 bg-gradient-to-br from-emerald-50/70 via-white to-amber-50/60 p-5 rounded-2xl border border-emerald-200/90 shadow-inner">
+                        
+                        <!-- Event: สิ่งที่จะได้เจอ -->
+                        <div class="space-y-1.5">
+                            <div class="flex items-center gap-1.5 text-base sm:text-lg font-bold text-emerald-700">
+                                <span>🌟 เรื่องที่เกิดคือ!!!</span>
+                            </div>
+                            <p id="rngEventText" class="text-sm sm:text-base font-medium text-slate-700 leading-relaxed">
+                                กำลังเปิดคำทำนาย...
+                            </p>
+                        </div>
+
+                        <div class="h-px bg-slate-200/60 w-full"></div>
+
+                        <!-- Action: เมื่อเกิดสิ่งนั้นแล้วจะทำแบบนี้ -->
+                        <div class="space-y-1.5">
+                            <div class="flex items-center gap-1.5 text-base sm:text-lg font-bold text-amber-700">
+                                <span>🍀 วิธีรับโชคคือ</span>
+                            </div>
+                            <p id="rngAdviceText" class="text-sm sm:text-base font-medium text-slate-700 leading-relaxed">
+                                กำลังสุ่มคำแนะนำ...
+                            </p>
+                        </div>
+
+                    </div>
+                </div>
+
+                <!-- Action Buttons: Re-roll RNG endlessly OR Accept Blessing -->
+                <div class="space-y-3 pt-2">
+                    <!-- Accept Blessing Primary Button -->
+                    <button 
+                        type="button" 
+                        id="acceptBlessingBtn"
+                        class="w-full py-4 px-6 rounded-2xl bg-gradient-to-r from-emerald-500 to-teal-600 hover:from-emerald-600 hover:to-teal-700 text-white font-bold text-base sm:text-lg shadow-lg shadow-emerald-500/25 hover:shadow-xl hover:shadow-emerald-500/35 transition-all duration-200 active:scale-95 flex items-center justify-center gap-2"
+                    >
+                        <span>🍀 ยินยอมรับคำอวยพร</span>
+                    </button>
+                </div>
+
+            </div>
+        </div>
+    </div>
+
+    <!-- Minimal Footer -->
+    <footer class="relative z-10 py-4 text-center text-xs text-slate-400">
+        <span>กดที่ปุ่ม ☰ ด้านบนซ้ายเพื่อดูบันทึกดวงและใบโคลเวอร์สะสมของคุณ</span>
+    </footer>
+
+    <!-- APPLICATION LOGIC -->
+    <script>
+        /**************************************************************
+         * 1. RICH RNG POOL (EVENTS & ACTIONS)
+         **************************************************************/
+        const RNG_EVENTS = [
+            "เดินผ่านร้านขนมหรือคาเฟ่ แล้วได้กลิ่นหอมๆ จนบังเอิญเจอเมนูอร่อยที่ลดราคาพอดี",
+            "เปิดเพลงแบบสุ่ม (Shuffle) แล้วเจอเพลงโปรดที่ไม่ได้ฟังมานานมากขึ้นมาเป็นเพลงแรก",
+            "เจอแมวส้มหรือน้องหมาอารมณ์ดีเดินเข้ามาทักทายและยอมให้เกาคางอย่างเป็นมิตร",
+            "งานหรือโปรเจกต์ที่คิดว่าจะใช้เวลานาน กลับทำเสร็จไวและราบรื่นกว่าที่คิดไว้มาก",
+            "ได้รับข้อความดีๆ หรือคำชมที่ไม่คาดคิดจากเพื่อนหรือคนที่คุยด้วย",
+            "ต่อคิวซื้อของหรือรอรถ แล้วแถวของคุณขยับเร็วที่สุดอย่างน่าอัศจรรย์",
+            "ค้นกระเป๋าหรือลิ้นชักแล้วเจอของที่เคยหาไม่เจอ หรือเจอแบงก์พับซ่อนอยู่",
+            "ตื่นมาหรือเงยหน้ามองฟ้าแล้วเจอท้องฟ้าสีสวยมาก พร้อมลมเย็นๆ พัดมาพอดี",
+            "สั่งอาหารวันนี้แล้วแม่ค้าใจดีแถมพิเศษให้เยอะกว่าปกติแบบจุกๆ",
+            "ได้ไอเดียเจ๋งๆ แวบเข้ามาในหัวตอนกำลังเหม่อหรือกำลังพักผ่อนสบายๆ",
+            "กดสั่งของออนไลน์หรือเล็งของชิ้นหนึ่งไว้ แล้วเจอโค้ดส่วนลดที่ลดได้เยอะสุดๆ",
+            "เรื่องที่กำลังกังวลใจอยู่ จู่ๆ ก็คลี่คลายลงได้เองแบบง่ายดายเหมือนมีคนช่วยจัดวาง",
+            "เปิดโซเชียลขึ้นมาแล้วเจอโพสต์ตลกๆ ที่ทำให้หัวเราะออกมาดังๆ จนลืมเหนื่อย",
+            "เจอที่จอดรถหรือที่นั่งว่างในมุมที่ดีที่สุดโดยไม่ต้องวนหาให้เสียเวลา",
+            "ชงเครื่องดื่มหรือเลือกเมนูน้ำวันนี้ แล้วรสชาติกลมกล่อมถูกปากเต็มสิบไม่หัก",
+            "มีคนทักว่าวันนี้ดูสดใสขึ้น หรือแต่งตัวเข้ากับบรรยากาศวันนี้มากๆ",
+            "คอมพิวเตอร์หรือมือถือทำงานลื่นปรื๊ด ไม่มีค้าง ไม่มีงอแงตลอดทั้งวัน",
+            "บังเอิญเห็นตัวเลขเรียงกันสวยๆ บนนาฬิกา เช่น 11:11, 12:34 หรือ 15:51",
+            "เพื่อนชวนไปกินของอร่อย หรือมีคนเอาขนมติดไม้ติดมือมาแบ่งให้",
+            "ได้พักสายตาหรือนอนหลับเต็มอิ่มจนรู้สึกเหมือนชาร์จแบตชีวิตเต็ม 100%",
+            "หน้างาน Wi-Fi ลื่นกว่าที่คิด สื่อการนำเสนอส่งเสร็จในพริบตาโดยไม่ต้องแก้ไขไฟล์ตอนสอบ",
+            "เลื่อนส่งงานหรือเดดไลน์นิดหน่อยเพราะอาจารย์ใจดี ทำให้แก้งานได้สมบูรณ์กว่าที่เคยคิด",
+            "แบตมือถือเหลือ 1% แต่พอปลั๊กไฟว่างขึ้นมาได้ทันบังเอิญ ทำให้ผ่านช่วงเวลาสำคัญได้",
+            "Playlist ที่ตั้งไว้พังออกเพลงซ้ำ แต่เพลงสุดท้ายที่เด้งมาเป็นเพลงนำโชคและกำลังใจพอดี",
+            "คิดว่าโหลดเซฟเกมจะเสีย แต่พอเปิดใหม่กลับได้โบนัสฟรีและไอเทมที่ต้องการหายใจ",
+            "พิมพ์ข้อความรีพอร์ตใส่เพื่อนแล้วลืมส่ง พอแก้ใหม่กลับได้ใจเย็นและโอกาสเริ่มใหม่ที่ดีกว่าเดิม",
+            "เข้าคลาสสายหรือมาสายจุดใส่ใจ แต่นัดเรียนเปลี่ยนห้องทำให้ไม่พลาดเนื้อหาสำคัญ",
+            "จอมือถือดับตอนกดสั่งของออนไลน์ พอกลับมาเจอโปรโมชันที่ลดแรงกว่าเดิมแบบจุกๆ",
+            "รถติดดึกช่วงกลับบ้าน แต่ได้แชร์รถกับคนสนิทแล้วพบเรื่องสนุกหรือข่าวดีระหว่างทาง",
+            "ลืมของกันแดดหรืออุปกรณ์สำคัญช่วงกลางวัน แล้วเจอเพื่อนใจดีแชร์ให้พอดี",
+            "โพสต์รูปหรือรีวิวไปแล้วแต่ไม่มีใครเห็น กลับมีคนที่ใช่เข้ามาคอมเมนต์รับชมแบบไม่คาดคิด",
+            "เตรียมชุดไปงานแต่เสื้อเปื้อนตอนใกล้ถึงเวลา กลับเจอโทนชุดที่ใช่และสวยกว่าเดิมในตู้",
+            "รู้สึกเครียดเรื่องคะแนนหรือผลงาน แล้วมีคนรุ่นพี่บอกวิธีแก้ที่ง่ายกว่าที่นึกไว้มาก",
+            "คำสั่งซื้อของถูกยกเลิกเพราะร้านโล่ง พอสั่งใหม่ได้สินค้าตัวสวยราคาดีและส่งเร็วขึ้น",
+            "ถูก Ghost คนที่คุยอยู่ ฟากยังเจอคนใหม่เข้ามาคุยอย่างเป็นธรรมชาติและสนใจจริงใจ",
+            "ครูกำชับให้ส่งงานช้าแต่พอดีช้ามีเวลาแก้แบบเวอร์ชันใหม่ จนได้ผลงานดีกว่าครั้งแรก",
+            "ลืมรหัสเข้าระบบหรือ OTP ช้า แต่ลูกค้าหรือเพื่อนช่วยกดยืนยันจนทุกอย่างผ่านแบบไวเวอร์ชัน",
+            "เปิดแอปเรียนผิดเวลาดูคลิปผี แต่เป็นวิชาที่จำเป็นต้องจดเลยบังเอิญช่วยเก็บคะแนนได้",
+            "เสร็จจากนัดเจอแต่ฝนตก พอรอแป๊ะเจอคาเฟ่ดีและเพลงน่ารักจนกลายเป็นช่วงเวลาสบายใจ",
+            "ลืมใส่หูฟังไปออกกำลัง แต่จู่ๆ ได้ยินคำชมที่ช่วยปั๊มความมั่นใจเต็มหมึก",
+            "โทรศัพท์ไม่มีสัญญาณตอนกำลังหาทาง กลับพบป้ายรถเมล์หรือคนใจดีชี้ทางถูกต้อง",
+            "ซื้อของแลกแต้มครบแล้วระบบล่ม พอเปิดอีกทีแลกได้ดีลพิเศษและมีของแถมเพิ่ม",
+            "วางแผนไปคอนเสิร์ตแต่ร้านขนมใกล้เวทีเปิดลดราคา ทำให้วันนั้นมีทั้งเสียงเพลงและขนมโปรด",
+            "ฝนจะมาช่วงเดินทางแล้วเช่าร่มไม่ได้ คืนนี้กันน้ำปังแต่เจอเพื่อนชวนไปนั่งรถส่งฟรี",
+            "โพสต์คลิปตัดต่อแล้วค้าง แต่ส่งออกจังหวะดีทำให้คนดูประทับใจและแชร์ต่อแบบไม่ตั้งใจ",
+            "ลืมอยู่นอกบ้านโดยไม่มีเงินสด แต่ QR หรือคนข้างๆ ช่วยให้เรื่องผ่านไปได้ง่ายกว่าที่คิด"
+        ];
+
+        const RNG_ACTIONS = [
+            "ให้ยิ้มกว้างๆ ให้ตัวเอง 1 ที แล้วสั่งเครื่องดื่มแก้วโปรดเป็นการฉลองความโชคดี",
+            "ให้สูดหายใจลึกๆ รับพลังงานบวก แล้วพูดในใจว่า 'วันนี้เป็นวันของเราจริงๆ!'",
+            "ให้จดความรู้สึกดีๆ หรือถ่ายรูปบรรยากาศตอนนั้นเก็บไว้เป็นความทรงจำนำโชค",
+            "ให้แบ่งปันความโชคดีด้วยการพูดขอบคุณหรือชมคนรอบข้างอย่างน้อย 1 ประโยค",
+            "ให้ยืดเส้นยืดสายบิดขี้เกียจสบายๆ แล้วให้รางวัลตัวเองด้วยขนมอร่อยๆ สักชิ้น",
+            "ให้ส่งสติกเกอร์น่ารักๆ หรือแชร์เรื่องดีๆ นี้ให้เพื่อนสนิทฟัง 1 คน",
+            "ให้ฮัมเพลงโปรดเบาๆ แล้วเดินหน้าทำสิ่งที่ตั้งใจไว้ในวันนี้ด้วยความมั่นใจเต็มร้อย",
+            "ให้พยักหน้าให้ตัวเองเบาๆ แล้วพักสายตา 2 นาทีเพื่อซึมซับความสบายใจนี้ไว้",
+            "ให้ตั้งเป้าหมายเล็กๆ ที่ทำสำเร็จได้ในวันนี้เพิ่มอีก 1 อย่าง เพราะดวงกำลังขึ้นสุดๆ",
+            "ให้ดื่มน้ำเย็นๆ สดชื่นๆ 1 แก้ว พร้อมรับโชคก้อนต่อไปที่จะตามมาติดๆ",
+            "ให้เก็บรอยยิ้มนี้ไว้ แล้วบอกตัวเองว่าเรื่องดีๆ กำลังทยอยเข้ามาหาเราเรื่อยๆ",
+            "ให้เปิดเพลงจังหวะสนุกๆ คลอไปด้วย จะยิ่งช่วยคูณพลังความดวงดีเข้าไปอีกเท่าตัว",
+            "ให้ทำสิ่งที่ช้าได้ก่อน 1 อย่าง เช่น ส่งงานแก้ไขก่อนโพสต์ ลงมือเล็กๆ ก็ไล่ทันDeadline แล้ว",
+            "ให้เก็บ Screenshot โอกาสดีหรือข้อความดีๆไว้เป็นแรงลุ้นเมื่อใครถามว่าโชคดีคืออะไร",
+            "ให้ส่งข้อความขอบคุณเพื่อนที่ช่วยในจุดที่มีปัญหา อย่าไว้แต่นั่งโปสต์แล้วอยู่ดี",
+            "ให้กดบันทึกไอเดียก่อนออกแอป สำคัญตรงนี้อาจกลายเป็นงานหรือของวิเศษชิ้นต่อไปได้เลย",
+            "ให้รีแอคชันวอนปากลิปเดี๋ยวนี้ แล้วปล่อยใจไปก่อนคอยดูว่าโอกาสดีจะมาแบบไหน",
+            "ให้ทำ Checklist 3 อย่างวันนี้ ไม่ต้องใหญ่ไล่ตั้งแต่เก็บโต๊ะไปล้างแก้วก็ถือว่าช่วยได้แล้ว",
+            "ให้รีบทดสอบระบบแบตชาร์จพีจีคลิปแจ้งเตือนและสายชาร์จแล้วก็มองโลกแบบพร้อมรับ",
+            "ให้บันทึกแพทเทิร์นที่หาทางได้ดีที่สุด จากความผิดพลาดครั้งนี้ลองบอกว่าเดี๋ยวแก้เองดีไหม",
+            "ให้เตรียมแผนสำรองไม่ว่าจะไฟล์ เก็บข้อมูล ถนนหรือเงิน วันดีกลับไม่มีผลโดนขัดขวาง",
+            "ให้โทรหรือแชทถามคนที่วางแผนไว้ทันที ข้อติดขัดแค่เรื่องสื่อสารก็แก้ได้ง่ายกว่าที่คิด",
+            "ให้พักนิ้ว 5 นาที ปิดหน้าจอชั่วคราว แล้วกลับมาอ่านดีลครั้งเดียวด้วยความคมชัดใหม่",
+            "ให้รอตรวจสอบรายละเอียดครั้งสุดท้ายก่อนกดส่งหรือกดซื้อ รับรองใจชื่นใจและกระเป๋าไม่บานตาย",
+            "ให้บอกตัวเองว่าแก้ได้เสมอ แม้ตอนนี้ยังกด Undo ไม่ได้นี่ก็อ่านจากความผิดพลาดได้",
+            "ให้ส่งเพลงหรือคลิปแจ้งให้เพื่อนเห็นกันว่าโชคดีเมื่อไหร่ก็ส่งข่าวดีมาให้พลังบวก",
+            "ให้วางน้ำไว้ข้างตัวและชาร์จแบตให้เก็บพลังน่ารักไว้ก่อนเจอกิจกรรมถัดไป",
+            "ให้กินอาหารหรือขนมที่ชอบในปริมาณพอเหมาะ เพราะความสุขในเมนูวันนี้ย่อมคูณดวงได้ดี",
+            "ให้ยกมือถือขึ้นวางให้ตรงที่แสงดี ถ่ายรูปช่วงนี้ไว้ดีใจในอนาคตว่าเคยผ่านจุดสวยมาก",
+            "ให้เตรียมบทส่งตัวเองให้กำลังใจสั้นๆ ก่อนเริ่มงานใหม่ เพื่อให้สมองแช่ออร่าเต็มที่"
+        ];
+
+        /**************************************************************
+         * 2. STATE & LOCAL STORAGE MANAGEMENT
+         **************************************************************/
+        const STORAGE_KEYS = {
+            CLOVER_COUNT: 'lucky_clover_count_v1',
+            HISTORY_LIST: 'lucky_fortune_history_v1',
+            CONSTELLATION_STATE: 'lucky_constellation_state_v1',
+            SOUND_MUTED: 'lucky_sound_muted_v1'
+        };
+
+        localStorage.removeItem(STORAGE_KEYS.CLOVER_COUNT);
+        localStorage.removeItem(STORAGE_KEYS.CONSTELLATION_STATE);
+        localStorage.removeItem(STORAGE_KEYS.HISTORY_LIST);
+        let cloverCount = 0;
+        let fortuneHistory = [];
+
+        let currentUserInput = "";
+        let currentRngEvent = "";
+        let currentRngAdvice = "";
+        let currentSessionRerolls = 0;
+        let isCelebrating = false;
+        let constellationClickIndex = 0;
+        let isGeneralSoundMuted = localStorage.getItem(STORAGE_KEYS.SOUND_MUTED) === 'true';
+
+        let constellationState = {
+            digits: [],
+            targetSum: 0,
+            startCount: cloverCount,
+            completed: false,
+            selectedIndices: []
+        };
+        try {
+            const savedConstellation = localStorage.getItem(STORAGE_KEYS.CONSTELLATION_STATE);
+            if (savedConstellation) {
+                const parsedConstellation = JSON.parse(savedConstellation);
+                if (
+                    Array.isArray(parsedConstellation.digits) &&
+                    parsedConstellation.digits.length === 6 &&
+                    Number.isInteger(parsedConstellation.targetSum) &&
+                    Number.isInteger(parsedConstellation.startCount)
+                ) {
+                    constellationState = parsedConstellation;
+                }
+            }
+        } catch (e) {
+            constellationState = {
+                digits: [],
+                targetSum: 0,
+                startCount: cloverCount,
+                completed: false,
+                selectedIndices: []
+            };
+        }
+
+        /**************************************************************
+         * 3. DOM ELEMENTS
+         **************************************************************/
+        const menuToggleBtn = document.getElementById('menuToggleBtn');
+        const closeDrawerBtn = document.getElementById('closeDrawerBtn');
+        const drawerBackdrop = document.getElementById('drawerBackdrop');
+        const historyDrawer = document.getElementById('historyDrawer');
+        const historyCountBadge = document.getElementById('historyCountBadge');
+        const historyListContainer = document.getElementById('historyListContainer');
+        const drawerCloverTotal = document.getElementById('drawerCloverTotal');
+        const clearHistoryBtn = document.getElementById('clearHistoryBtn');
+        const soundToggleBtn = document.getElementById('soundToggleBtn');
+        const soundOnIcon = document.getElementById('soundOnIcon');
+        const soundOffIcon = document.getElementById('soundOffIcon');
+
+        const mainScreenCloverMultiplier = document.getElementById('mainScreenCloverMultiplier');
+
+        const fortuneForm = document.getElementById('fortuneForm');
+        const userAnswerInput = document.getElementById('userAnswerInput');
+        const quickChips = document.querySelectorAll('.quick-chip');
+
+        const blessingModalBackdrop = document.getElementById('blessingModalBackdrop');
+        const closeModalBtn = document.getElementById('closeModalBtn');
+        const modalUserEcho = document.getElementById('modalUserEcho');
+        const popupCloverBadge = document.getElementById('popupCloverBadge');
+        const popupCloverMultiplier = document.getElementById('popupCloverMultiplier');
+        const cloverPowerRankText = document.getElementById('cloverPowerRankText');
+        const rngCounterTag = document.getElementById('rngCounterTag');
+        const fortuneCardBox = document.getElementById('fortuneCardBox');
+        const rngEventText = document.getElementById('rngEventText');
+        const rngAdviceText = document.getElementById('rngAdviceText');
+        const rerollRngBtn = document.getElementById('rerollRngBtn');
+        const diceIcon = document.getElementById('diceIcon');
+        const aiGenerateRngBtn = document.getElementById('aiGenerateRngBtn');
+        const acceptBlessingBtn = document.getElementById('acceptBlessingBtn');
+        const easterEggScreen = document.getElementById('easterEggScreen');
+        const closeEasterEggBtn = document.getElementById('closeEasterEggBtn');
+        const copyEasterEggPasswordBtn = document.getElementById('copyEasterEggPasswordBtn');
+        const copyEasterEggPasswordStatus = document.getElementById('copyEasterEggPasswordStatus');
+        const welcomePasswordForm = document.getElementById('welcomePasswordForm');
+        const welcomePasswordInput = document.getElementById('welcomePasswordInput');
+        const welcomePasswordError = document.getElementById('welcomePasswordError');
+        const welcomePasswordPanel = document.getElementById('welcomePasswordPanel');
+        const welcomeSuccessPanel = document.getElementById('welcomeSuccessPanel');
+        const welcomeSuccessMusic = document.getElementById('welcomeSuccessMusic');
+
+        const celebrationCanvas = document.getElementById('celebrationCanvas');
+        const birthdayCakeOverlay = document.getElementById('birthdayCakeOverlay');
+        const celebrationCloverNotice = document.getElementById('celebrationCloverNotice');
+
+        function updateSoundToggleUI() {
+            soundOnIcon.classList.toggle('hidden', isGeneralSoundMuted);
+            soundOffIcon.classList.toggle('hidden', !isGeneralSoundMuted);
+            soundToggleBtn.setAttribute('aria-label', isGeneralSoundMuted ? 'เปิดเสียงทั่วไป' : 'ปิดเสียงทั่วไป');
+            soundToggleBtn.title = isGeneralSoundMuted ? 'เปิดเสียงทั่วไป' : 'ปิดเสียงทั่วไป';
+        }
+
+        updateSoundToggleUI();
+        soundToggleBtn.addEventListener('click', () => {
+            isGeneralSoundMuted = !isGeneralSoundMuted;
+            localStorage.setItem(STORAGE_KEYS.SOUND_MUTED, String(isGeneralSoundMuted));
+            updateSoundToggleUI();
+        });
+
+        /**************************************************************
+         * 4. WEB AUDIO API SYNTHESIZER (NO EXTERNAL MP3 NEEDED)
+         **************************************************************/
+        let audioCtx = null;
+
+        function getAudioContext() {
+            if (!audioCtx) {
+                const AudioContextClass = window.AudioContext || window.webkitAudioContext;
+                if (AudioContextClass) {
+                    audioCtx = new AudioContextClass();
+                }
+            }
+            if (audioCtx && audioCtx.state === 'suspended') {
+                audioCtx.resume();
+            }
+            return audioCtx;
+        }
+
+        function playStarClickSound(step = 0) {
+            try {
+                const ctx = getAudioContext();
+                if (!ctx) return;
+                const now = ctx.currentTime;
+                const fearLevel = Math.max(0, Math.min(3, step));
+                const notes = [
+                    1318.51 - fearLevel * 55,
+                    1567.98 - fearLevel * 72,
+                    2093.0 - fearLevel * 95
+                ];
+                notes.forEach((freq, index) => {
+                    const oscillator = ctx.createOscillator();
+                    const gain = ctx.createGain();
+                    oscillator.type = fearLevel >= 2 ? 'sawtooth' : 'sine';
+                    oscillator.frequency.setValueAtTime(freq, now + index * 0.035);
+                    gain.gain.setValueAtTime(0.001, now + index * 0.035);
+                    gain.gain.linearRampToValueAtTime(0.06 + fearLevel * 0.018, now + index * 0.035 + 0.015);
+                    gain.gain.exponentialRampToValueAtTime(0.001, now + index * 0.035 + 0.18);
+                    oscillator.connect(gain);
+                    gain.connect(ctx.destination);
+                    oscillator.start(now + index * 0.035);
+                    oscillator.stop(now + index * 0.035 + 0.19);
+                });
+
+                const bell = ctx.createOscillator();
+                const bellGain = ctx.createGain();
+                bell.type = 'triangle';
+                bell.frequency.setValueAtTime(987.77, now);
+                bell.frequency.exponentialRampToValueAtTime(783.99, now + 0.28);
+                bellGain.gain.setValueAtTime(0.001, now);
+                bellGain.gain.linearRampToValueAtTime(0.065, now + 0.012);
+                bellGain.gain.exponentialRampToValueAtTime(0.001, now + 0.38);
+                bell.connect(bellGain);
+                bellGain.connect(ctx.destination);
+                bell.start(now);
+                bell.stop(now + 0.39);
+
+                const lowDrone = ctx.createOscillator();
+                const lowGain = ctx.createGain();
+                lowDrone.type = 'triangle';
+                lowDrone.frequency.setValueAtTime(110 - fearLevel * 8, now);
+                lowDrone.frequency.linearRampToValueAtTime(72 - fearLevel * 6, now + 0.42);
+                lowGain.gain.setValueAtTime(0.001, now);
+                lowGain.gain.linearRampToValueAtTime(0.018 + fearLevel * 0.012, now + 0.06);
+                lowGain.gain.exponentialRampToValueAtTime(0.001, now + 0.44);
+                lowDrone.connect(lowGain);
+                lowGain.connect(ctx.destination);
+                lowDrone.start(now);
+                lowDrone.stop(now + 0.45);
+            } catch (e) {
+                // Ignore audio errors if blocked.
+            }
+        }
+
+        function playWrongStarClickSound() {
+            try {
+                const ctx = getAudioContext();
+                if (!ctx) return;
+                const now = ctx.currentTime;
+
+                [110, 138.59, 92.5].forEach((frequency, index) => {
+                    const oscillator = ctx.createOscillator();
+                    const gain = ctx.createGain();
+                    oscillator.type = index === 1 ? 'square' : 'sawtooth';
+                    oscillator.frequency.setValueAtTime(frequency, now + index * 0.06);
+                    oscillator.frequency.linearRampToValueAtTime(frequency * 0.72, now + 0.38);
+                    gain.gain.setValueAtTime(0.001, now + index * 0.06);
+                    gain.gain.linearRampToValueAtTime(0.075, now + index * 0.06 + 0.012);
+                    gain.gain.exponentialRampToValueAtTime(0.001, now + 0.46);
+                    oscillator.connect(gain);
+                    gain.connect(ctx.destination);
+                    oscillator.start(now + index * 0.06);
+                    oscillator.stop(now + 0.47);
+                });
+
+                const noiseLength = Math.floor(ctx.sampleRate * 0.13);
+                const noiseBuffer = ctx.createBuffer(1, noiseLength, ctx.sampleRate);
+                const noiseData = noiseBuffer.getChannelData(0);
+                for (let index = 0; index < noiseLength; index += 1) {
+                    noiseData[index] = (Math.random() * 2 - 1) * (1 - index / noiseLength);
+                }
+                const noise = ctx.createBufferSource();
+                const noiseFilter = ctx.createBiquadFilter();
+                const noiseGain = ctx.createGain();
+                noise.buffer = noiseBuffer;
+                noiseFilter.type = 'lowpass';
+                noiseFilter.frequency.setValueAtTime(950, now);
+                noiseGain.gain.setValueAtTime(0.12, now);
+                noiseGain.gain.exponentialRampToValueAtTime(0.001, now + 0.13);
+                noise.connect(noiseFilter);
+                noiseFilter.connect(noiseGain);
+                noiseGain.connect(ctx.destination);
+                noise.start(now);
+                noise.stop(now + 0.14);
+            } catch (e) {
+                // Ignore audio errors if blocked.
+            }
+        }
+
+        // Play soft click/dice sound on RNG reroll
+        function playDiceRollSound() {
+            if (isGeneralSoundMuted) return;
+            try {
+                const ctx = getAudioContext();
+                if (!ctx) return;
+                const now = ctx.currentTime;
+                const notes = [523.25, 659.25, 783.99]; // C5, E5, G5 quick sparkle
+                notes.forEach((freq, idx) => {
+                    const osc = ctx.createOscillator();
+                    const gain = ctx.createGain();
+                    osc.type = 'sine';
+                    osc.frequency.setValueAtTime(freq, now + idx * 0.045);
+                    gain.gain.setValueAtTime(0.08, now + idx * 0.045);
+                    gain.gain.exponentialRampToValueAtTime(0.001, now + idx * 0.045 + 0.12);
+                    osc.connect(gain);
+                    gain.connect(ctx.destination);
+                    osc.start(now + idx * 0.045);
+                    osc.stop(now + idx * 0.045 + 0.13);
+                });
+            } catch (e) {
+                // Ignore audio errors if blocked
+            }
+        }
+
+        // Play joyful Birthday & Blessing Fanfare when clicking "ยินยอมรับคำอวยพร"
+        function playCelebrationFanfare() {
+            if (isGeneralSoundMuted) return;
+            try {
+                const ctx = getAudioContext();
+                if (!ctx) return;
+                const now = ctx.currentTime;
+
+                // 1. Party Popper "Pop" burst (Noise burst)
+                const bufferSize = ctx.sampleRate * 0.12;
+                const noiseBuffer = ctx.createBuffer(1, bufferSize, ctx.sampleRate);
+                const output = noiseBuffer.getChannelData(0);
+                for (let i = 0; i < bufferSize; i++) {
+                    output[i] = (Math.random() * 2 - 1) * Math.exp(-i / (ctx.sampleRate * 0.03));
+                }
+                const whiteNoise = ctx.createBufferSource();
+                whiteNoise.buffer = noiseBuffer;
+                const noiseGain = ctx.createGain();
+                noiseGain.gain.setValueAtTime(0.25, now);
+                noiseGain.gain.exponentialRampToValueAtTime(0.01, now + 0.12);
+                whiteNoise.connect(noiseGain);
+                noiseGain.connect(ctx.destination);
+                whiteNoise.start(now);
+
+                // 2. Cheerful Celebration Fanfare Melody (C5 -> E5 -> G5 -> C6 + Harmony)
+                const melody = [
+                    { freq: 523.25, start: 0.05, dur: 0.14, type: 'triangle' }, // C5
+                    { freq: 659.25, start: 0.18, dur: 0.14, type: 'triangle' }, // E5
+                    { freq: 783.99, start: 0.31, dur: 0.14, type: 'triangle' }, // G5
+                    { freq: 1046.50, start: 0.45, dur: 0.55, type: 'triangle' }, // C6
+                    // Harmony chord on final note
+                    { freq: 659.25, start: 0.45, dur: 0.55, type: 'sine' },     // E5
+                    { freq: 783.99, start: 0.45, dur: 0.55, type: 'sine' },     // G5
+                    // Second joyful chime arpeggio
+                    { freq: 1174.66, start: 0.75, dur: 0.15, type: 'sine' },    // D6
+                    { freq: 1318.51, start: 0.90, dur: 0.65, type: 'sine' }     // E6
+                ];
+
+                melody.forEach(note => {
+                    const osc = ctx.createOscillator();
+                    const gain = ctx.createGain();
+                    osc.type = note.type;
+                    osc.frequency.setValueAtTime(note.freq, now + note.start);
+
+                    gain.gain.setValueAtTime(0.001, now + note.start);
+                    gain.gain.linearRampToValueAtTime(0.14, now + note.start + 0.02);
+                    gain.gain.exponentialRampToValueAtTime(0.001, now + note.start + note.dur);
+
+                    osc.connect(gain);
+                    gain.connect(ctx.destination);
+                    osc.start(now + note.start);
+                    osc.stop(now + note.start + note.dur + 0.02);
+                });
+            } catch (e) {
+                // Ignore if browser blocks audio
+            }
+        }
+
+        /**************************************************************
+         * 5. CLOVER COUNTER & HISTORY UI UPDATER
+         **************************************************************/
+        function updateCloverAndHistoryUI() {
+            // Update History Badge Count
+            historyCountBadge.textContent = fortuneHistory.length;
+            if (cloverCount > 0) {
+                drawerCloverTotal.textContent = `🍀 X${cloverCount}`;
+                drawerCloverTotal.classList.remove('hidden');
+                mainScreenCloverMultiplier.textContent = `X${cloverCount}`;
+                mainScreenCloverMultiplier.classList.remove('hidden');
+            } else {
+                drawerCloverTotal.textContent = '';
+                drawerCloverTotal.classList.add('hidden');
+                mainScreenCloverMultiplier.textContent = '';
+                mainScreenCloverMultiplier.classList.add('hidden');
+            }
+
+
+            // Inside Popup: Right of "วันนี้คุณจะเจอกับสิ่งนี้"
+            // Shows X1, X2, X3... (if 0 completed yet, show X1 on their first fortune or current cloverCount)
+            const displayMultiplier = cloverCount > 0 ? cloverCount : 1;
+            if (popupCloverMultiplier) {
+                popupCloverMultiplier.textContent = cloverCount > 0 ? `X${displayMultiplier}` : '';
+                popupCloverMultiplier.classList.toggle('hidden', cloverCount === 0);
+            }
+
+            // Dynamic Power Rank Description as Clover Multiplier grows
+            if (cloverPowerRankText) {
+                if (displayMultiplier >= 10) {
+                    cloverPowerRankText.textContent = `🔥 ระดับ GODLIKE (X${displayMultiplier}) พลังโคลเวอร์ทะลุขีดจำกัด โชคลาภพุ่งแรงคูณสิบ!`;
+                } else if (displayMultiplier >= 5) {
+                    cloverPowerRankText.textContent = `👑 ระดับ LEGENDARY (X${displayMultiplier}) ออร่าโคลเวอร์ทองคำศักดิ์สิทธิ์ ดึงดูดเรื่องปังๆ รอบทิศ!`;
+                } else if (displayMultiplier >= 2) {
+                    cloverPowerRankText.textContent = `⚡ ระดับ EPIC BUFF (X${displayMultiplier}) พลังใบโคลเวอร์สะสมเพิ่มขึ้น เสริมดวงทวีคูณ!`;
+                } else {
+                    cloverPowerRankText.textContent = `✨ โคลเวอร์ศักดิ์สิทธิ์ 4 แฉก เปล่งประกายเสริมดวงสูงสุด!`;
+                }
+            }
+
+            renderHistoryList();
+        }
+
+        function renderHistoryList() {
+            historyListContainer.innerHTML = '';
+
+            if (fortuneHistory.length === 0) {
+                historyListContainer.innerHTML = `
+                    <div class="h-64 flex flex-col items-center justify-center text-center px-4 text-slate-400 space-y-2">
+                        <div class="text-4xl opacity-60">🍀</div>
+                        <p class="text-sm font-medium text-slate-500">ยังไม่มีบันทึกคำอวยพร</p>
+                        <p class="text-xs text-slate-400">พิมพ์คำตอบในหน้าหลักแล้วกด "ยินยอมรับคำอวยพร" เพื่อสะสมดวงดีๆ ของคุณไว้ที่นี่</p>
+                    </div>
+                `;
+                return;
+            }
+
+            const latestFortuneId = fortuneHistory[0]?.id;
+
+            fortuneHistory.forEach((item) => {
+                const card = document.createElement('div');
+                card.className = "p-4 rounded-2xl bg-slate-50/90 border border-slate-200/80 space-y-2.5 shadow-2xs hover:border-emerald-300 transition-colors";
+                const isConstellationClue = String(item.id) === String(latestFortuneId) && item.constellationSequence?.length === 4;
+                const cardTimestamp = isConstellationClue
+                    ? `<span class="constellation-clue" aria-label="ลำดับตัวเลขคำใบ้ ${item.constellationSequence.join(' ')}">
+                        <span class="constellation-clue-digit">${item.constellationSequence[0]}</span>
+                        <span class="constellation-clue-digit">${item.constellationSequence[1]}</span>
+                        <span class="constellation-clue-colon">:</span>
+                        <span class="constellation-clue-digit">${item.constellationSequence[2]}</span>
+                        <span class="constellation-clue-digit">${item.constellationSequence[3]}</span>
+                    </span>`
+                    : `<span>${item.timestamp}</span>`;
+                card.innerHTML = `
+                    <div class="flex items-center justify-between text-xs text-slate-400">
+                        ${Number(item.cloverNumber) > 0 ? `
+                            <span class="inline-flex items-center gap-1 font-bold text-emerald-700 bg-emerald-100/80 px-2.5 py-0.5 rounded-full border border-emerald-200">
+                                🍀 X${item.cloverNumber}
+                            </span>
+                        ` : ''}
+                        <div class="flex items-center gap-2">
+                            <span>${cardTimestamp}</span>
+                            <button type="button" data-remove-fortune="${item.id}" class="p-1.5 rounded-lg text-slate-400 hover:text-rose-600 hover:bg-rose-50 transition-colors" aria-label="ลบการ์ดดวงนี้และลดโคลเวอร์ 1">
+                                <svg xmlns="http://www.w3.org/2000/svg" class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+                                    <path stroke-linecap="round" stroke-linejoin="round" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
+                                </svg>
+                            </button>
+                        </div>
+                    </div>
+                    <div class="text-xs text-slate-500 bg-white px-3 py-1.5 rounded-xl border border-slate-100">
+                        คำตอบของคุณ: <span class="font-medium text-slate-700">"${escapeHtml(item.userInput)}"</span>
+                    </div>
+                    <div class="space-y-1 pt-0.5">
+                        <p class="text-xs font-semibold text-emerald-700">🌟 วันนี้คุณจะเจอกับสิ่งนี้:</p>
+                        <p class="text-sm font-medium text-slate-800 leading-snug">${escapeHtml(item.event)}</p>
+                    </div>
+                    <div class="space-y-1 pt-1 border-t border-slate-200/60">
+                        <p class="text-xs font-semibold text-amber-700">💡 เมื่อเกิดสิ่งนั้นแล้วให้ทำแบบนี้:</p>
+                        <p class="text-xs sm:text-sm text-slate-600 leading-snug">${escapeHtml(item.advice)}</p>
+                    </div>
+                `;
+                historyListContainer.appendChild(card);
+            });
+        }
+
+        function removeFortuneCard(id) {
+            const recordIndex = fortuneHistory.findIndex((item) => String(item.id) === String(id));
+            if (recordIndex === -1) return;
+
+            fortuneHistory.splice(recordIndex, 1);
+            fortuneHistory.forEach((item, index) => {
+                item.cloverNumber = fortuneHistory.length - index;
+            });
+            cloverCount = Math.max(0, cloverCount - 1);
+
+            localStorage.setItem(STORAGE_KEYS.HISTORY_LIST, JSON.stringify(fortuneHistory));
+            localStorage.setItem(STORAGE_KEYS.CLOVER_COUNT, String(cloverCount));
+            syncConstellationCompletion();
+            updateCloverAndHistoryUI();
+        }
+
+        historyListContainer.addEventListener('click', (event) => {
+            const removeButton = event.target.closest('[data-remove-fortune]');
+            if (!removeButton) return;
+            removeFortuneCard(removeButton.dataset.removeFortune);
+        });
+
+        function escapeHtml(str) {
+            const div = document.createElement('div');
+            div.textContent = str;
+            return div.innerHTML;
+        }
+
+        /**************************************************************
+         * 6. RNG FORTUNE GENERATOR & GEMINI AI OPTIONAL GENERATOR
+         **************************************************************/
+        function buildContextualFortune(input) {
+            const text = input.toLowerCase();
+            const category = {
+                data: [],
+                advice: []
+            };
+
+            if (/งาน|โปรเจก|ประชุม|ธุรกิจ|เลื่อนขั้น|เงินเดือน|ลูกค้า|บริษัท/.test(text)) {
+                category.data = [
+                    `เรื่อง “${input}” จะเริ่มราบรื่นขึ้น แต่คนที่ทำแทนนอนไม่ได้แน่ะ โชคดีสุดคือเจอเพื่อนร่วมทีมไม่โยนงาน`,
+                    `สิ่งที่คุณวางแผนเรื่อง “${input}” จะได้รับโอกาสดี แต่อย่าไปแปลงเป็นคำว่า “ว่างกว่านี้จริงๆ”`,
+                    `งานเรื่อง “${input}” กำลังมีจังหวะเปลี่ยนจากติดขัดเป็นสำเร็จเร็วขึ้น แนะนำให้ลุยต่อก่อนโลกจำว่าคุณคือคนทำงานแล้ว`
+                ];
+                category.advice = [
+                    "เริ่มงานเล็กที่ชัดที่สุดก่อน เดี๋ยวโต๊ะทำงานมันจะร้องหาพนักงานตัวจริงเอง",
+                    "ส่งรายละเอียดให้ครบแล้วถามคนเกี่ยวข้อง ถ้าคำถามไม่มีเหตุผล แปลว่าต้องเดินเรื่องดีๆ เตรียมวาร์ปแบบมืออาชีพ",
+                    "จด 3 สิ่งสำคัญไว้ก่อนประชุม พร้อมพูดให้มั่นใจ แต่พูดมากไปจะกลายเป็นชีทพรีเซนต์สั่นนะเพื่อน"
+                ];
+            } else if (/กิน|อาหาร|ข้าว|ของหวาน|กาแฟ|ชา|ร้าน/.test(text)) {
+                category.data = [
+                    `เรื่อง “${input}” จะนำพบของอร่อยและประทับใจ แต่ระวังอิ่มจนลืมตัวน่ะ เจ้าแห่งของขบวน`,
+                    `ช่วงนี้เรื่อง “${input}” มีโอกาสเจอโค้ดส่วนลดหรือเมนูกินฟรี จังหวะดีกว่ายอดเงินในบัญชีตอนนี้อีก`
+                ];
+                category.advice = [
+                    "ลองเมนูใหม่ในโซนที่รับได้ อันตรายที่สุดคือหิวผิดจุดแม้สุขภาพจะไม่พร้อมไปด้วย",
+                    "กินช้าๆ สูดหายใจดีๆ แป้งเป็นเรื่องแต่พลังวังวนมันไม่เคยกั๊กเลย"
+                ];
+            } else if (/เดินทาง|เที่ยว|รถ|รถไฟ|เครื่องบิน|ไป|ออกนอก/.test(text)) {
+                category.data = [
+                    `เรื่อง “${input}” จะมีเส้นทางลัดหรือคนช่วยพาเดินทาง แต่ถ้ายังหลงทางใช้ GPS ช่วยตัวเองก่อนนะ`,
+                    `เรื่องที่คุณจะทำกับ “${input}” จะเจอสถานที่ดี คนดี และประสบการณ์ดี และไม่เจอกับรถติดที่ด่าไม่หยุด`
+                ];
+                category.advice = [
+                    "เตรียมแผนสำรองออกล่วงหน้าเล็กน้อย เพราะการรีบครึ่งทางไม่มีคนจะรีบติดตามแล้วเอา",
+                    "เช็กเส้นทางและสิ่งจำเป็นอีกครั้งก่อนออก เดินทางดีๆ อย่าให้เพื่อนต้องเปิดไมค์บอกคุณว่าอยู่ไหน"
+                ];
+            } else if (/เรียน|สอบ|อ่าน|หนังสือ|ทบทวน|ติว/.test(text)) {
+                category.data = [
+                    `สิ่งที่คุณกำลังเรียนเรื่อง “${input}” จะมีจุดเข้าใจสำคัญปรากฏขึ้น ก่อนสมองจะหลับถามสิ่งแปลกตอนเช้า`,
+                    `การลงมือเรื่อง “${input}” มีแนวโน้มให้ผลดี ถ้าน้อยกว่าตำนาน “อ่านเฉพาะหัวข้อ” อีกนะ`
+                ];
+                category.advice = [
+                    "แบ่งการเรียนเป็นช่วงสั้นๆ แล้วทบทวนด้วยคำถามของตัวเอง แทนจะนั่งหลอกว่าอ่านแบบข้ามหน้าแล้ว",
+                    "เลือกหัวข้อยากสุดก่อนพัก พอไหวก็ต่อ ไม่ไหวก็ห้ามด่าไลน์เพื่อนซะก่อน"
+                ];
+            } else if (/ซื้อ|ช้อป|สินค้า|ของ|ราคา|ของขวัญ/.test(text)) {
+                category.data = [
+                    `เรื่อง “${input}” มีโอกาสพบราคาดีหรือของตรงใจ แต่กระเป๋าเงินจะออกเสียง “อย่าเอาเลยครับ”`,
+                    `สิ่งที่คุณมองเรื่อง “${input}” จะค่อยๆ กลายเป็นทางเลือกที่คุ้มค่าพอ เพราะถูกใจไม่เท่ากับถูกงบ`
+                ];
+                category.advice = [
+                    "ตั้งงบและเปรียบเทียบคุณสมบัติก่อนตัดสินใจ ฝาก “กดสั่ง” ไว้ก่อนใจมันไปลยังกดตอนนี้",
+                    "ตรวจรีวิวและเงื่อนไขสำคัญอีกครั้ง แล้วเลือกสิ่งที่ใช้ได้นาน ไม่ใช่ของที่ถ่ายรูปลง Story ได้ 1 วัน"
+                ];
+            } else if (/ออกกำลัง|วิ่ง|เล่นกีฬา|โยคะ|ฟิตเนส|นอน|พัก/.test(text)) {
+                category.data = [
+                    `เรื่อง “${input}” จะช่วยให้พลังและอารมณ์ดีขึ้น แต่ผลจะไม่มาเร็วกว่าร้านเดลิเวอรี่แน่`,
+                    `สิ่งที่คุณวางแผนเรื่อง “${input}” กำลังส่งสัญญาณการฟื้นตัว สมองจะเริ่มใช้งานก็ดีเป็นเทพ`
+                ];
+                category.advice = [
+                    "ทำอย่างสม่ำเสมอแต่ไม่กดดันตัวเอง หากเริ่มมันไม่สบาย กอดหมอนก็เป็นกิจกรรมที่มีคุณค่ารึเปล่า",
+                    "เริ่มเบาๆ จากการผ่อนคลาย แล้วค่อยเพิ่มความเข้มข้น แทนจะเริ่มปั๊บเดียวจนฟุบ"
+                ];
+            } else {
+                category.data = [
+                    `เรื่อง “${input}” จะเริ่มมีข่าวดีหรือโอกาสดีเข้ามาอย่างไม่คาดคิด พอไม่สบายก็ใส่ใจตัวเองนะ อย่าทำหน้าหย่ิๆ`,
+                    `สิ่งที่คุณกำลังจะทำเรื่อง “${input}” มีแนวโน้มออกไปในทิศทางดีกว่าเดิม แม้ทางยังดีกว่ารู้ตัวเองเดินผิด`,
+                    `การลงมือเรื่อง “${input}” จะพาคุณเจอคนหรือข้อมูลดีๆ แต่ถ้าสิ่งที่เจอคือถุงห่อของเดิมก็ไม่ต้องรีบดีใจ`
+                ];
+                category.advice = [
+                    "ลงมือช้าแต่ชัด เลือกขั้นตอนเล็กที่สุดให้สำเร็จก่อน จะได้มีเรื่องไว้เล่าแทนจะมีแต่ความกลัว",
+                    "บันทึกสิ่งที่อยากได้ไว้ให้ชัดเจน เพราะคำว่า “ขอแค่อย่างนั้น” มันกว้างเกินเจ้าของเน็ตฟลิกซ์",
+                    "เปิดใจรับคำแนะนำ ย้ำคำที่คุณเขียนไว้ในใจ แล้วเริ่มทำแทนจะมานั่งรอพรทำงานเอง"
+                ];
+            }
+
+            return {
+                event: category.data[Math.floor(Math.random() * category.data.length)],
+                advice: category.advice[Math.floor(Math.random() * category.advice.length)]
+            };
+        }
+
+        function rollNewFortune(playSound = false) {
+            if (playSound) {
+                playDiceRollSound();
+            }
+
+            currentSessionRerolls++;
+            if (rngCounterTag) {
+                rngCounterTag.textContent = `| สุ่มครั้งที่ #${currentSessionRerolls}`;
+            }
+
+            // Rotate dice icon
+            if (diceIcon) {
+                diceIcon.style.transform = `rotate(${currentSessionRerolls * 180}deg)`;
+            }
+
+            // Pick a random Event & Advice different from current
+            let nextEvent = RNG_EVENTS[Math.floor(Math.random() * RNG_EVENTS.length)];
+            if (RNG_EVENTS.length > 1 && nextEvent === currentRngEvent) {
+                nextEvent = RNG_EVENTS[(RNG_EVENTS.indexOf(nextEvent) + 1) % RNG_EVENTS.length];
+            }
+
+            let nextAdvice = RNG_ACTIONS[Math.floor(Math.random() * RNG_ACTIONS.length)];
+            if (RNG_ACTIONS.length > 1 && nextAdvice === currentRngAdvice) {
+                nextAdvice = RNG_ACTIONS[(RNG_ACTIONS.indexOf(nextAdvice) + 1) % RNG_ACTIONS.length];
+            }
+
+            currentRngEvent = nextEvent;
+            currentRngAdvice = nextAdvice;
+
+            // Animate text refresh
+            fortuneCardBox.classList.remove('shuffle-anim');
+            void fortuneCardBox.offsetWidth; // trigger reflow
+            fortuneCardBox.classList.add('shuffle-anim');
+
+            rngEventText.textContent = currentRngEvent;
+            rngAdviceText.textContent = currentRngAdvice;
+        }
+
+        // Optional Gemini API Grounded Creative Fortune Generator
+        async function generateAIFortuneFromInput() {
+            const originalBtnText = aiGenerateRngBtn.innerHTML;
+            aiGenerateRngBtn.disabled = true;
+            aiGenerateRngBtn.innerHTML = `<span class="animate-spin inline-block">⏳</span> <span>กำลังเสก...</span>`;
+
+            const apiKey = "";
+            const apiUrl = `https://generativelanguage.googleapis.com/v1beta/models/gemini-3-flash-preview:generateContent?key=${apiKey}`;
+
+            const systemPrompt = "คุณคือ AI หมอดูสายฟีลกู๊ด อารมณ์ดี น่ารัก ตอบเป็นภาษาไทยสั้นๆ กระชับ สร้างสรรค์ คิดเหตุการณ์โชคดีน่ารักๆ ในชีวิตประจำวัน 1 อย่าง และสิ่งที่แนะนำให้ทำเมื่อเกิดเหตุการณ์นั้น 1 อย่าง";
+            const userPrompt = `ผู้ใช้ตอบคำถาม 'วันนี้จะดวงดีไหมน้าา' ว่า "${currentUserInput}" ช่วยสุ่มเหตุการณ์ดีๆ ที่เขาจะได้เจอในวันนี้ และสิ่งที่ควรทำเมื่อเกิดสิ่งนั้น`;
+
+            const payload = {
+                contents: [{ parts: [{ text: userPrompt }] }],
+                systemInstruction: { parts: [{ text: systemPrompt }] },
+                generationConfig: {
+                    responseMimeType: "application/json",
+                    responseSchema: {
+                        type: "OBJECT",
+                        properties: {
+                            event: { type: "STRING" },
+                            advice: { type: "STRING" }
+                        },
+                        propertyOrdering: ["event", "advice"]
+                    }
+                }
+            };
+
+            try {
+                const response = await fetch(apiUrl, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify(payload)
+                });
+
+                if (!response.ok) throw new Error("API Fallback");
+                const result = await response.json();
+                const jsonText = result?.candidates?.[0]?.content?.parts?.[0]?.text;
+                if (jsonText) {
+                    const parsed = JSON.parse(jsonText);
+                    if (parsed.event && parsed.advice) {
+                        currentSessionRerolls++;
+                        if (rngCounterTag) {
+                            rngCounterTag.textContent = `| AI สุ่มพิเศษ #${currentSessionRerolls}`;
+                        }
+                        currentRngEvent = parsed.event;
+                        currentRngAdvice = parsed.advice;
+
+                        fortuneCardBox.classList.remove('shuffle-anim');
+                        void fortuneCardBox.offsetWidth;
+                        fortuneCardBox.classList.add('shuffle-anim');
+
+                        rngEventText.textContent = currentRngEvent;
+                        rngAdviceText.textContent = currentRngAdvice;
+                        playDiceRollSound();
+                        return;
+                    }
+                }
+                rollNewFortune(true);
+            } catch (err) {
+                // Seamless fallback to rich local RNG if offline or API key not injected
+                rollNewFortune(true);
+            } finally {
+                aiGenerateRngBtn.disabled = false;
+                aiGenerateRngBtn.innerHTML = originalBtnText;
+            }
+        }
+
+        /**************************************************************
+         * 7. CONFETTI & BIRTHDAY CAKE CELEBRATION ENGINE
+         **************************************************************/
+        let confettiParticles = [];
+        let confettiAnimId = null;
+
+        function startBirthdayCelebrationEffect() {
+            celebrationCanvas.classList.remove('hidden');
+            birthdayCakeOverlay.classList.remove('hidden');
+            birthdayCakeOverlay.classList.add('flex');
+
+            celebrationCanvas.width = window.innerWidth;
+            celebrationCanvas.height = window.innerHeight;
+            const ctx = celebrationCanvas.getContext('2d');
+
+            const colors = ['#10b981', '#34d399', '#fbbf24', '#f43f5e', '#60a5fa', '#a78bfa', '#fb7185'];
+            const emojis = ['🎂', '🍀', '🎉', '✨', '🍰', '🥳'];
+
+            confettiParticles = [];
+            for (let i = 0; i < 110; i++) {
+                const isEmoji = i % 6 === 0;
+                confettiParticles.push({
+                    x: window.innerWidth / 2 + (Math.random() - 0.5) * 260,
+                    y: window.innerHeight * 0.55 + (Math.random() - 0.5) * 80,
+                    vx: (Math.random() - 0.5) * 18,
+                    vy: -(Math.random() * 16 + 7),
+                    gravity: 0.35 + Math.random() * 0.15,
+                    size: Math.random() * 10 + 6,
+                    color: colors[Math.floor(Math.random() * colors.length)],
+                    rotation: Math.random() * 360,
+                    rotationSpeed: (Math.random() - 0.5) * 12,
+                    isEmoji: isEmoji,
+                    emoji: emojis[Math.floor(Math.random() * emojis.length)],
+                    opacity: 1
+                });
+            }
+
+            function renderConfetti() {
+                ctx.clearRect(0, 0, celebrationCanvas.width, celebrationCanvas.height);
+
+                confettiParticles.forEach(p => {
+                    p.x += p.vx;
+                    p.y += p.vy;
+                    p.vy += p.gravity;
+                    p.vx *= 0.99;
+                    p.rotation += p.rotationSpeed;
+
+                    ctx.save();
+                    ctx.translate(p.x, p.y);
+                    ctx.rotate((p.rotation * Math.PI) / 180);
+                    ctx.globalAlpha = Math.max(0, p.opacity);
+
+                    if (p.isEmoji) {
+                        ctx.font = '24px sans-serif';
+                        ctx.textAlign = 'center';
+                        ctx.textBaseline = 'middle';
+                        ctx.fillText(p.emoji, 0, 0);
+                    } else {
+                        ctx.fillStyle = p.color;
+                        ctx.fillRect(-p.size / 2, -p.size / 2, p.size, p.size * 0.65);
+                    }
+                    ctx.restore();
+                });
+
+                confettiAnimId = requestAnimationFrame(renderConfetti);
+            }
+
+            renderConfetti();
+        }
+
+        function stopBirthdayCelebrationEffect() {
+            if (confettiAnimId) {
+                cancelAnimationFrame(confettiAnimId);
+                confettiAnimId = null;
+            }
+            celebrationCanvas.classList.add('hidden');
+            birthdayCakeOverlay.classList.add('hidden');
+            birthdayCakeOverlay.classList.remove('flex');
+        }
+
+        function dismissBirthdayCelebrationEffect() {
+            stopBirthdayCelebrationEffect();
+            userAnswerInput.value = '';
+            userAnswerInput.focus();
+            isCelebrating = false;
+        }
+
+        /**************************************************************
+         * 8. WORKFLOW EVENT HANDLERS
+         **************************************************************/
+        // Quick suggestion chips fill the input and submit
+        quickChips.forEach(chip => {
+            chip.addEventListener('click', () => {
+                userAnswerInput.value = chip.textContent.trim();
+                userAnswerInput.focus();
+            });
+        });
+
+        // Submit answer -> Open Popup with AI greeting & RNG
+        fortuneForm.addEventListener('submit', (e) => {
+            e.preventDefault();
+            if (isCelebrating) return;
+
+            generateHalftoneNumbers();
+
+            const rawVal = userAnswerInput.value.trim();
+            const enteredSum = /^\d+$/.test(rawVal) ? Number(rawVal) : null;
+            if (enteredSum !== null && constellationState.targetSum > 0 && enteredSum === constellationState.targetSum) {
+                currentUserInput = rawVal;
+                easterEggScreen.classList.remove('hidden');
+                easterEggScreen.classList.add('flex');
+                userAnswerInput.value = '';
+                return;
+            }
+            currentUserInput = rawVal || "ขอให้วันนี้ดวงดีสุดๆ!";
+            currentSessionRerolls = 0;
+
+            modalUserEcho.textContent = `จากคำตอบของคุณ: "${currentUserInput}"`;
+
+            // Show current clover multiplier right next to "วันนี้คุณจะเจอกับสิ่งนี้"
+            // If user already completed N cycles, show X(N), or X1 on first view so clover is always visible as requested
+            const shownCount = cloverCount > 0 ? cloverCount : 1;
+            if (popupCloverMultiplier) {
+                popupCloverMultiplier.textContent = cloverCount > 0 ? `X${shownCount}` : '';
+                popupCloverMultiplier.classList.toggle('hidden', cloverCount === 0);
+            }
+
+            rollNewFortune(true);
+
+            blessingModalBackdrop.classList.remove('hidden');
+            blessingModalBackdrop.classList.add('flex');
+        });
+
+        // Close Modal without accepting
+        closeModalBtn.addEventListener('click', () => {
+            blessingModalBackdrop.classList.add('hidden');
+            blessingModalBackdrop.classList.remove('flex');
+        });
+
+        closeEasterEggBtn.addEventListener('click', () => {
+            easterEggScreen.classList.add('hidden');
+            easterEggScreen.classList.remove('flex');
+            userAnswerInput.value = '';
+            userAnswerInput.focus();
+        });
+
+        copyEasterEggPasswordBtn.addEventListener('click', async () => {
+            const password = 'Bright 123456789';
+            try {
+                await navigator.clipboard.writeText(password);
+            } catch (error) {
+                const temporaryInput = document.createElement('textarea');
+                temporaryInput.value = password;
+                temporaryInput.setAttribute('readonly', '');
+                temporaryInput.style.position = 'fixed';
+                temporaryInput.style.opacity = '0';
+                document.body.appendChild(temporaryInput);
+                temporaryInput.select();
+                document.execCommand('copy');
+                temporaryInput.remove();
+            }
+
+            copyEasterEggPasswordBtn.textContent = 'คัดลอกแล้ว';
+            copyEasterEggPasswordStatus.textContent = 'คัดลอก Bright 123456789 แล้ว';
+            window.setTimeout(() => {
+                copyEasterEggPasswordBtn.textContent = 'คัดลอกรหัส';
+                copyEasterEggPasswordStatus.textContent = '';
+            }, 1800);
+        });
+
+        easterEggScreen.addEventListener('click', (event) => {
+            if (event.target === easterEggScreen) {
+                closeEasterEggBtn.click();
+            }
+        });
+
+        welcomePasswordForm.addEventListener('submit', (event) => {
+            event.preventDefault();
+            if (welcomePasswordInput.value.trim() === 'Bright 123456789') {
+                welcomePasswordError.classList.add('opacity-0');
+                welcomePasswordPanel.classList.add('hidden');
+                welcomeSuccessPanel.classList.remove('hidden');
+                welcomeSuccessPanel.classList.add('block');
+                welcomeSuccessMusic.volume = 0.25;
+                welcomeSuccessMusic.currentTime = 0;
+                welcomeSuccessMusic.play().catch(() => {});
+            } else {
+                welcomePasswordError.classList.remove('opacity-0');
+            }
+        });
+
+        birthdayCakeOverlay.addEventListener('click', () => {
+            if (isCelebrating) {
+                dismissBirthdayCelebrationEffect();
+            }
+        });
+
+        // Accept Blessing -> Save to History, Increment Clover, Sound + Cake Celebration, Refresh back to initial screen
+        acceptBlessingBtn.addEventListener('click', () => {
+            if (isCelebrating) return;
+            isCelebrating = true;
+
+            // 1. Increment Clover Counter (X1, X2, X3...)
+            cloverCount += 1;
+            localStorage.setItem(STORAGE_KEYS.CLOVER_COUNT, String(cloverCount));
+
+            // 2. Save current fortune & advice to History
+            const now = new Date();
+            const timeStr = now.toLocaleTimeString('th-TH', { hour: '2-digit', minute: '2-digit' }) + ' น.';
+            const newRecord = {
+                id: Date.now(),
+                cloverNumber: cloverCount,
+                userInput: currentUserInput,
+                event: currentRngEvent,
+                advice: currentRngAdvice,
+                timestamp: timeStr
+            };
+            fortuneHistory.unshift(newRecord);
+            localStorage.setItem(STORAGE_KEYS.HISTORY_LIST, JSON.stringify(fortuneHistory));
+            syncConstellationCompletion();
+
+            // Update Clover badge immediately inside popup & celebration banner
+            if (popupCloverMultiplier) {
+                popupCloverMultiplier.textContent = `X${cloverCount}`;
+            }
+            celebrationCloverNotice.textContent = `สะสมใบโคลเวอร์ 4 แฉกสำเร็จ: 🍀 X${cloverCount}`;
+            updateCloverAndHistoryUI();
+
+            // 3. Hide Modal & Trigger Joyful Sound + Birthday Cake Celebration Effect
+            blessingModalBackdrop.classList.add('hidden');
+            blessingModalBackdrop.classList.remove('flex');
+
+            playCelebrationFanfare();
+            startBirthdayCelebrationEffect();
+
+            // 4. After celebration completes (~2.4 seconds), refresh/reset smoothly to the main screen
+            setTimeout(() => {
+                if (isCelebrating) {
+                    dismissBirthdayCelebrationEffect();
+                }
+            }, 2400);
+        });
+
+        // Hamburger Menu Drawer Toggle (Top-Left 3 lines)
+        function openDrawer() {
+            drawerBackdrop.classList.remove('hidden');
+            setTimeout(() => drawerBackdrop.classList.remove('opacity-0'), 10);
+            historyDrawer.classList.remove('-translate-x-full');
+        }
+
+        function closeDrawer() {
+            drawerBackdrop.classList.add('opacity-0');
+            historyDrawer.classList.add('-translate-x-full');
+            setTimeout(() => drawerBackdrop.classList.add('hidden'), 300);
+        }
+
+        menuToggleBtn.addEventListener('click', openDrawer);
+        closeDrawerBtn.addEventListener('click', closeDrawer);
+        drawerBackdrop.addEventListener('click', closeDrawer);
+
+        // Clear History & Reset Clovers
+        clearHistoryBtn.addEventListener('click', () => {
+            cloverCount = 0;
+            fortuneHistory = [];
+            localStorage.removeItem(STORAGE_KEYS.CLOVER_COUNT);
+            localStorage.removeItem(STORAGE_KEYS.HISTORY_LIST);
+            localStorage.removeItem(STORAGE_KEYS.CONSTELLATION_STATE);
+            constellationState = {
+                digits: [],
+                targetSum: 0,
+                startCount: 0,
+                completed: false,
+                selectedIndices: []
+            };
+            document.getElementById('constellationLines').innerHTML = '';
+            updateCloverAndHistoryUI();
+            window.location.reload();
+        });
+
+        function syncConstellationCompletion() {
+            const progress = Math.max(0, cloverCount - constellationState.startCount);
+            const shouldBeComplete = constellationState.targetSum > 0 && progress === constellationState.targetSum;
+
+            if (shouldBeComplete) {
+                constellationState.completed = true;
+                localStorage.setItem(STORAGE_KEYS.CONSTELLATION_STATE, JSON.stringify(constellationState));
+                drawConstellationLines();
+                return;
+            }
+
+            constellationState.completed = false;
+            localStorage.setItem(STORAGE_KEYS.CONSTELLATION_STATE, JSON.stringify(constellationState));
+            document.getElementById('constellationLines').innerHTML = '';
+            document.querySelectorAll('.constellation-digit').forEach((element) => {
+                element.classList.remove('constellation-digit');
+                element.classList.remove('constellation-digit-fade');
+                element.style.pointerEvents = '';
+                element.onclick = null;
+            });
+        }
+
+        function saveConstellationClueToLatestCard(selectedElements) {
+            if (!Array.isArray(fortuneHistory) || fortuneHistory.length === 0) return;
+
+            const latestCard = fortuneHistory[0];
+            const clueSequence = [...selectedElements].map((element) => element.textContent);
+
+            latestCard.constellationSequence = clueSequence;
+            localStorage.setItem(STORAGE_KEYS.HISTORY_LIST, JSON.stringify(fortuneHistory));
+            renderHistoryList();
+        }
+
+        function drawConstellationLines() {
+            const svg = document.getElementById('constellationLines');
+            if (!svg) return;
+
+            svg.innerHTML = '';
+            const numberElements = [...document.querySelectorAll('.random-number-bg')];
+            if (numberElements.length < 4) return;
+
+            if (!Array.isArray(constellationState.selectedIndices) || constellationState.selectedIndices.length !== 4) {
+                const shuffledIndices = [0, 1, 2, 3, 4, 5];
+                for (let i = shuffledIndices.length - 1; i > 0; i--) {
+                    const j = Math.floor(Math.random() * (i + 1));
+                    [shuffledIndices[i], shuffledIndices[j]] = [shuffledIndices[j], shuffledIndices[i]];
+                }
+                constellationState.selectedIndices = shuffledIndices.slice(0, 4);
+                localStorage.setItem(STORAGE_KEYS.CONSTELLATION_STATE, JSON.stringify(constellationState));
+            }
+
+            document.querySelectorAll('.constellation-digit').forEach((element) => {
+                element.classList.remove('constellation-digit');
+                element.classList.remove('constellation-digit-fade');
+                element.style.pointerEvents = '';
+                element.onclick = null;
+            });
+            const selected = constellationState.selectedIndices.map((index) => numberElements[index]);
+            selected.forEach((element) => {
+                element.classList.add('constellation-digit');
+                element.style.pointerEvents = 'auto';
+            });
+            const clickSequence = [...selected];
+            let sequence = Array.isArray(constellationState.sequence) && constellationState.sequence.length === 4
+                ? constellationState.sequence.map(String)
+                : null;
+            if (!sequence || !sequence.every((digit) => clickSequence.some((element) => element.textContent === digit))) {
+                const visualSequence = selected.map((element) => String(element.textContent));
+                let shuffledSequence = [];
+                do {
+                    shuffledSequence = [...clickSequence];
+                    for (let i = shuffledSequence.length - 1; i > 0; i--) {
+                        const j = Math.floor(Math.random() * (i + 1));
+                        [shuffledSequence[i], shuffledSequence[j]] = [shuffledSequence[j], shuffledSequence[i]];
+                    }
+                    sequence = shuffledSequence.map((element) => element.textContent);
+                } while (sequence.every((digit, index) => digit === visualSequence[index]));
+            }
+            const visualSequence = selected.map((element) => String(element.textContent));
+            if (sequence.every((digit, index) => digit === visualSequence[index])) {
+                [sequence[0], sequence[1]] = [sequence[1], sequence[0]];
+                if (sequence.every((digit, index) => digit === visualSequence[index])) {
+                    [sequence[1], sequence[2]] = [sequence[2], sequence[1]];
+                }
+            }
+            constellationState.sequence = sequence;
+            localStorage.setItem(STORAGE_KEYS.CONSTELLATION_STATE, JSON.stringify(constellationState));
+            saveConstellationClueToLatestCard(sequence.map((digit) => {
+                return clickSequence.find((element) => element.textContent === digit) ||
+                    selected.find((element) => element.textContent === digit);
+            }));
+
+            constellationClickIndex = 0;
+            selected.forEach((element) => {
+                element.onclick = () => {
+                    const expectedDigit = sequence[constellationClickIndex];
+                    if (element.textContent === String(expectedDigit)) {
+                        playStarClickSound(constellationClickIndex);
+                        element.classList.add('constellation-digit-fade');
+                        constellationClickIndex += 1;
+                        if (constellationClickIndex === sequence.length) {
+                            constellationClickIndex = 0;
+                            const welcomeScreen = document.getElementById('welcomeConstellationScreen');
+                            welcomeScreen.classList.remove('hidden');
+                            welcomeScreen.classList.add('flex');
+                        }
+                    } else {
+                        playWrongStarClickSound();
+                        cloverCount = 0;
+                        localStorage.setItem(STORAGE_KEYS.CLOVER_COUNT, String(cloverCount));
+                        fortuneHistory.forEach((item) => {
+                            item.cloverNumber = 0;
+                            delete item.constellationSequence;
+                        });
+                        localStorage.setItem(STORAGE_KEYS.HISTORY_LIST, JSON.stringify(fortuneHistory));
+                        constellationState.completed = false;
+                        constellationState.selectedIndices = [];
+                        constellationState.sequence = [];
+                        localStorage.setItem(STORAGE_KEYS.CONSTELLATION_STATE, JSON.stringify(constellationState));
+                        setTimeout(() => window.location.reload(), 220);
+                    }
+                };
+            });
+            const points = selected.map((element) => {
+                const rect = element.getBoundingClientRect();
+                return {
+                    x: rect.left + rect.width / 2,
+                    y: rect.top + rect.height / 2
+                };
+            });
+
+            for (let i = 0; i < points.length - 1; i++) {
+                const line = document.createElementNS('http://www.w3.org/2000/svg', 'line');
+                line.setAttribute('x1', String(points[i].x));
+                line.setAttribute('y1', String(points[i].y));
+                line.setAttribute('x2', String(points[i + 1].x));
+                line.setAttribute('y2', String(points[i + 1].y));
+                line.setAttribute('class', 'constellation-line');
+                line.style.animationDelay = `${i * 0.18}s`;
+                svg.appendChild(line);
+            }
+        }
+
+        // Handle Window Resize for Confetti Canvas
+        window.addEventListener('resize', () => {
+            if (!celebrationCanvas.classList.contains('hidden')) {
+                celebrationCanvas.width = window.innerWidth;
+                celebrationCanvas.height = window.innerHeight;
+            }
+        });
+
+        function generateHalftoneNumbers() {
+            const halftoneNumbers = document.getElementById('halftoneNumbers');
+            if (!halftoneNumbers || halftoneNumbers.children.length > 0) return;
+
+            const digitPool = ['1', '2', '3', '4', '5', '6', '7', '8', '9'];
+            const positions = [];
+            const inputRect = userAnswerInput.closest('form')
+                ? userAnswerInput.closest('form').getBoundingClientRect()
+                : null;
+            const safeLeft = inputRect ? inputRect.left - 36 : window.innerWidth * 0.22;
+            const safeRight = inputRect ? inputRect.right + 36 : window.innerWidth * 0.78;
+            const safeTop = inputRect ? inputRect.top - 72 : window.innerHeight * 0.38;
+            const safeBottom = inputRect ? inputRect.bottom + 110 : window.innerHeight * 0.68;
+
+            for (let y = 72; y < window.innerHeight - 72; y += 90) {
+                for (let x = 54; x < window.innerWidth - 54; x += 126) {
+                    const insideInputZone = x >= safeLeft && x <= safeRight && y >= safeTop && y <= safeBottom;
+                    if (!insideInputZone) {
+                        positions.push({ x, y });
+                    }
+                }
+            }
+
+            for (let i = digitPool.length - 1; i > 0; i--) {
+                const j = Math.floor(Math.random() * (i + 1));
+                [digitPool[i], digitPool[j]] = [digitPool[j], digitPool[i]];
+            }
+            for (let i = positions.length - 1; i > 0; i--) {
+                const j = Math.floor(Math.random() * (i + 1));
+                [positions[i], positions[j]] = [positions[j], positions[i]];
+            }
+
+            const randomCount = 6;
+            constellationState.digits = digitPool.slice(0, randomCount);
+            constellationState.targetSum = constellationState.digits.reduce((sum, digit) => sum + Number(digit), 0);
+            constellationState.startCount = cloverCount;
+            constellationState.completed = false;
+            constellationState.selectedIndices = [];
+            localStorage.setItem(STORAGE_KEYS.CONSTELLATION_STATE, JSON.stringify(constellationState));
+
+            for (let i = 0; i < randomCount; i++) {
+                const number = document.createElement('span');
+                number.className = 'random-number-bg';
+                number.textContent = constellationState.digits[i];
+                number.style.left = `${positions[i].x}px`;
+                number.style.top = `${positions[i].y}px`;
+                number.style.transform = `rotate(${((i * 7) % 13) - 6}deg)`;
+                halftoneNumbers.appendChild(number);
+            }
+
+            if (constellationState.completed) {
+                requestAnimationFrame(drawConstellationLines);
+            }
+        };
+
+        // Initialize UI on load
+        window.onload = function () {
+            updateCloverAndHistoryUI();
+            userAnswerInput.focus();
+        };
+    </script>
 </body>
 </html>
