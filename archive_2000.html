@@ -1,0 +1,2743 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>PRIMARY // ARCHIVE_2000.HTM</title>
+  <style>
+    /* =========================================================================
+       1. ตั้งค่าตัวแปรสีและธีม (รองรับทั้งโหมดเว็บยุค 2000 โทนมืดหลอน และโหมดหน้าหลัก HCO 1.0)
+       ========================================================================= */
+    :root {
+      /* โทนสีหน้าหลัก HCO 1.0 (Modern) */
+      --bg-main: #0f111a;
+      --bg-card: #181b28;
+      --bg-card-hover: #212638;
+      --bg-modal: #141722;
+      --text-main: #f3f4f6;
+      --text-muted: #9ca3af;
+      --accent: #6366f1;
+      --accent-glow: rgba(99, 102, 241, 0.35);
+      --border-color: rgba(255, 255, 255, 0.08);
+
+      /* โทนสีหน้าต่างลับ ยุค 2000 (Y2K Dark Horror / BoingBoing 2000 Style) */
+      --y2k-bg: #070709;
+      --y2k-paper: #0e0e12;
+      --y2k-panel: #18181f;
+      --y2k-chrome: #22232a;
+      --y2k-chrome-light: #3e404d;
+      --y2k-chrome-dark: #09090c;
+      --y2k-text: #d8d4cf;
+      --y2k-muted: #8c8782;
+      --y2k-blood: #cc1111;
+      --y2k-blood-bright: #ff2a2a;
+      --y2k-amber: #d97706;
+      --y2k-link: #5c85ff;
+      --y2k-link-visited: #9d6bff;
+      --y2k-link-hover: #ff3b3b;
+      --y2k-green: #22c55e;
+    }
+
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+    }
+
+    body {
+      background-color: var(--y2k-bg);
+      color: var(--y2k-text);
+      min-height: 100vh;
+      overflow-x: hidden;
+    }
+
+    /* =========================================================================
+       2. แถบสลับหน้าต่างจำลอง (Top Preview Switcher Bar)
+       ช่วยให้สลับดูระหว่าง "หน้าเว็บหลัก HCO 1.0" กับ "หน้าต่างลับ ยุค 2000 (หลังกดคลิก)"
+       ========================================================================= */
+    .preview-switcher {
+      position: sticky;
+      top: 0;
+      z-index: 2000;
+      background: #050508;
+      border-bottom: 1px solid #2e1518;
+      padding: 6px 14px;
+      display: flex;
+      flex-wrap: wrap;
+      align-items: center;
+      justify-content: space-between;
+      gap: 10px;
+      font-family: 'Tahoma', 'Segoe UI', sans-serif;
+      font-size: 12px;
+      color: #a1a1aa;
+    }
+
+    .switcher-left {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      flex-wrap: wrap;
+    }
+
+    .switcher-badge {
+      background: #7f1d1d;
+      color: #fecaca;
+      padding: 2px 8px;
+      font-weight: bold;
+      font-size: 11px;
+      letter-spacing: 0.5px;
+      border: 1px solid #ef4444;
+    }
+
+    .switcher-btns {
+      display: flex;
+      gap: 6px;
+      flex-wrap: wrap;
+    }
+
+    .switch-view-btn {
+      padding: 4px 12px;
+      font-size: 12px;
+      font-family: 'Tahoma', sans-serif;
+      cursor: pointer;
+      background: #18181b;
+      color: #d4d4d8;
+      border: 1px solid #3f3f46;
+      transition: all 0.15s ease;
+    }
+
+    .switch-view-btn:hover {
+      border-color: #ef4444;
+      color: #fff;
+    }
+
+    .switch-view-btn.active {
+      background: #991b1b;
+      color: #ffffff;
+      border-color: #f87171;
+      font-weight: bold;
+      box-shadow: 0 0 10px rgba(220, 38, 38, 0.45);
+    }
+
+    /* เอฟเฟกต์เส้น CRT Scanlines & Vignette สำหรับหน้ายุค 2000 */
+    .crt-overlay {
+      position: fixed;
+      inset: 0;
+      pointer-events: none;
+      z-index: 1500;
+      background:
+        linear-gradient(rgba(18, 16, 16, 0) 50%, rgba(0, 0, 0, 0.38) 50%),
+        radial-gradient(circle at center, transparent 55%, rgba(0, 0, 0, 0.78) 100%);
+      background-size: 100% 3px, 100% 100%;
+      opacity: 0.85;
+      transition: opacity 0.25s ease;
+    }
+
+    .crt-overlay.hidden {
+      opacity: 0;
+    }
+
+    /* แอนิเมชันกระพริบหลอนๆ */
+    @keyframes crtFlicker {
+      0%, 96%, 100% { opacity: 1; }
+      97% { opacity: 0.84; transform: translateX(0.5px); }
+      98% { opacity: 0.95; transform: translateX(-0.5px); }
+      99% { opacity: 0.78; }
+    }
+
+    @keyframes pulseRed {
+      0%, 100% { box-shadow: 0 0 4px rgba(204, 17, 17, 0.4); }
+      50% { box-shadow: 0 0 14px rgba(255, 42, 42, 0.85); }
+    }
+
+    @keyframes eyeBlink {
+      0%, 92%, 100% { transform: scaleY(1); }
+      95% { transform: scaleY(0.08); }
+    }
+
+    /* =========================================================================
+       3. สไตล์หน้าต่างเว็บยุค 2000 โทนมืด-หลอน (Y2K DARK HORROR ARCHIVE VIEW)
+       ถอดโครงสร้างจากภาพตัวอย่าง BoingBoing ปี 2000 + เบราว์เซอร์คลาสสิก
+       ========================================================================= */
+    #y2kArchiveView {
+      font-family: 'Times New Roman', Georgia, 'Tahoma', serif;
+      background-color: var(--y2k-bg);
+      background-image:
+        radial-gradient(circle at 20% 10%, rgba(120, 10, 10, 0.12) 0%, transparent 45%),
+        repeating-linear-gradient(0deg, rgba(255,255,255,0.012) 0px, rgba(255,255,255,0.012) 1px, transparent 1px, transparent 4px);
+      color: var(--y2k-text);
+      min-height: calc(100vh - 37px);
+      animation: crtFlicker 9s infinite;
+    }
+
+    /* --- แถบ Browser Chrome ยุค 2000 (Bookmarks / Location / Toolbar) --- */
+    .y2k-browser-chrome {
+      background: var(--y2k-chrome);
+      border-top: 2px solid var(--y2k-chrome-light);
+      border-bottom: 2px solid var(--y2k-chrome-dark);
+      font-family: 'Tahoma', 'MS Sans Serif', Geneva, sans-serif;
+      font-size: 12px;
+      color: #d4d4d8;
+      user-select: none;
+    }
+
+    .y2k-chrome-row {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      padding: 4px 10px;
+      border-bottom: 1px solid #121318;
+      flex-wrap: wrap;
+    }
+
+    .y2k-chrome-btn {
+      display: inline-flex;
+      align-items: center;
+      gap: 4px;
+      padding: 2px 8px;
+      background: var(--y2k-chrome);
+      color: #e4e4e7;
+      border-top: 1px solid var(--y2k-chrome-light);
+      border-left: 1px solid var(--y2k-chrome-light);
+      border-right: 1px solid var(--y2k-chrome-dark);
+      border-bottom: 1px solid var(--y2k-chrome-dark);
+      font-family: 'Tahoma', sans-serif;
+      font-size: 12px;
+      cursor: pointer;
+    }
+
+    .y2k-chrome-btn:active {
+      border-top: 1px solid var(--y2k-chrome-dark);
+      border-left: 1px solid var(--y2k-chrome-dark);
+      border-right: 1px solid var(--y2k-chrome-light);
+      border-bottom: 1px solid var(--y2k-chrome-light);
+      transform: translateY(1px);
+    }
+
+    .y2k-location-label {
+      font-weight: bold;
+      color: #a1a1aa;
+      font-size: 12px;
+    }
+
+    .y2k-address-bar {
+      flex: 1;
+      min-width: 200px;
+      background: #0a0a0d;
+      color: #ef4444;
+      font-family: 'Courier New', Courier, monospace;
+      font-size: 13px;
+      font-weight: bold;
+      padding: 3px 8px;
+      border-top: 2px solid #050507;
+      border-left: 2px solid #050507;
+      border-right: 1px solid #3f3f46;
+      border-bottom: 1px solid #3f3f46;
+      outline: none;
+    }
+
+    .y2k-toolbar-links {
+      display: flex;
+      align-items: center;
+      flex-wrap: wrap;
+      gap: 12px;
+      padding: 3px 12px;
+      background: #1b1c22;
+      border-top: 1px solid #2e303b;
+    }
+
+    .y2k-tool-item {
+      background: none;
+      border: none;
+      color: #c4c4cc;
+      font-family: 'Tahoma', sans-serif;
+      font-size: 11.5px;
+      cursor: pointer;
+      display: inline-flex;
+      align-items: center;
+      gap: 4px;
+      padding: 1px 4px;
+    }
+
+    .y2k-tool-item:hover {
+      color: #ff4d4d;
+      text-decoration: underline;
+    }
+
+    .y2k-slash-icon {
+      display: inline-block;
+      width: 8px;
+      height: 11px;
+      background: linear-gradient(135deg, transparent 35%, #b91c1c 35%, #ef4444 65%, transparent 65%);
+    }
+
+    /* --- พื้นที่เนื้อหาเว็บยุค 2000 --- */
+    .y2k-page-wrap {
+      max-width: 1060px;
+      margin: 0 auto;
+      padding: 20px 24px 64px;
+      background: var(--y2k-paper);
+      border-left: 1px solid #1f191b;
+      border-right: 1px solid #1f191b;
+      box-shadow: 0 0 50px rgba(0, 0, 0, 0.95);
+    }
+
+    /* ส่วนหัวโลโก้สไตล์ BoingBoing 2000 (Block Logo + Pixel Mascot + Red Tagline) */
+    .y2k-header-banner {
+      display: flex;
+      align-items: flex-end;
+      flex-wrap: wrap;
+      gap: 14px;
+      margin-bottom: 18px;
+      padding-bottom: 12px;
+      border-bottom: 1px dashed #2e1d20;
+    }
+
+    .y2k-logo-box {
+      background: #990f0f;
+      border: 3px solid #d97706;
+      box-shadow: 3px 3px 0 #000000;
+      padding: 6px 14px;
+      display: inline-block;
+    }
+
+    .y2k-logo-text {
+      font-family: 'Courier New', 'Impact', monospace;
+      font-size: 2.1rem;
+      font-weight: 900;
+      letter-spacing: 2px;
+      color: #ffd60a;
+      text-shadow: 2px 2px 0 #3b0505;
+      line-height: 1;
+      text-transform: lowercase;
+    }
+
+    .y2k-mascot-wrap {
+      display: flex;
+      align-items: flex-end;
+      gap: 10px;
+    }
+
+    .y2k-mascot-svg {
+      width: 68px;
+      height: 86px;
+      border: 1px solid #3a2024;
+      background: #050507;
+      padding: 2px;
+      filter: contrast(1.25);
+    }
+
+    .y2k-tagline {
+      font-family: 'Courier New', Courier, monospace;
+      font-size: 0.78rem;
+      font-weight: bold;
+      color: var(--y2k-blood-bright);
+      letter-spacing: 1px;
+      text-transform: uppercase;
+      padding-bottom: 4px;
+    }
+
+    .y2k-sub-classification {
+      display: block;
+      color: var(--y2k-muted);
+      font-size: 0.72rem;
+      margin-top: 2px;
+    }
+
+    /* แถบลิงก์คั่นด้วย | และช่อง Search แบบบุ๋ม (Sunken 3D Input) */
+    .y2k-nav-search-bar {
+      display: flex;
+      flex-wrap: wrap;
+      align-items: center;
+      justify-content: space-between;
+      gap: 12px;
+      margin: 14px 0 24px;
+      padding: 8px 10px;
+      background: #09090c;
+      border: 1px solid #272024;
+    }
+
+    .y2k-pipe-links {
+      font-family: 'Courier New', Courier, monospace;
+      font-size: 0.86rem;
+      color: var(--y2k-muted);
+      display: flex;
+      flex-wrap: wrap;
+      align-items: center;
+      gap: 6px;
+    }
+
+    .y2k-filter-link {
+      background: none;
+      border: none;
+      color: var(--y2k-link);
+      font-family: 'Courier New', Courier, monospace;
+      font-size: 0.86rem;
+      text-decoration: underline;
+      cursor: pointer;
+      padding: 1px 3px;
+    }
+
+    .y2k-filter-link:hover {
+      color: var(--y2k-link-hover);
+      background: rgba(204, 17, 17, 0.12);
+    }
+
+    .y2k-filter-link.active {
+      color: #ff2a2a;
+      font-weight: bold;
+      background: rgba(204, 17, 17, 0.2);
+      outline: 1px dotted #cc1111;
+    }
+
+    .y2k-search-form {
+      display: flex;
+      align-items: center;
+      gap: 6px;
+    }
+
+    .y2k-sunken-input {
+      background: #141419;
+      color: #f3f4f6;
+      border-top: 2px solid #040406;
+      border-left: 2px solid #040406;
+      border-right: 2px solid #3f3f4a;
+      border-bottom: 2px solid #3f3f4a;
+      padding: 5px 8px;
+      font-family: 'Times New Roman', serif;
+      font-size: 0.95rem;
+      width: 210px;
+      outline: none;
+    }
+
+    .y2k-sunken-input:focus {
+      background: #1b1416;
+      border-color: #7f1d1d #ef4444 #ef4444 #7f1d1d;
+    }
+
+    .y2k-bevel-btn {
+      background: #272730;
+      color: #e5e5e5;
+      border-top: 2px solid #525263;
+      border-left: 2px solid #525263;
+      border-right: 2px solid #09090b;
+      border-bottom: 2px solid #09090b;
+      padding: 4px 12px;
+      font-family: 'Times New Roman', Georgia, serif;
+      font-size: 0.95rem;
+      font-weight: bold;
+      cursor: pointer;
+    }
+
+    .y2k-bevel-btn:hover {
+      background: #38191d;
+      color: #fecaca;
+    }
+
+    .y2k-bevel-btn:active {
+      border-top: 2px solid #09090b;
+      border-left: 2px solid #09090b;
+      border-right: 2px solid #525263;
+      border-bottom: 2px solid #525263;
+    }
+
+    /* โครงสร้าง 2 คอลัมน์แบบเว็บปี 2000 (ซ้าย: เนื้อหาหลัก + ช่องตัวละคร / ขวา: แบนเนอร์ Spyonit + ลิงก์คลังลับ) */
+    .y2k-columns {
+      display: grid;
+      grid-template-columns: 1fr 230px;
+      gap: 26px;
+      align-items: start;
+    }
+
+    /* --- คอลัมน์ซ้าย: วันที่, บันทึกหลอน, และตารางช่องตัวละคร --- */
+    .y2k-date-heading {
+      font-family: 'Times New Roman', Georgia, serif;
+      font-size: 1.25rem;
+      font-weight: bold;
+      color: #f3f4f6;
+      margin-bottom: 10px;
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      flex-wrap: wrap;
+    }
+
+    .y2k-corrupt-tag {
+      font-family: 'Courier New', monospace;
+      font-size: 0.75rem;
+      background: #3b0a0a;
+      color: #fca5a5;
+      border: 1px solid #991b1b;
+      padding: 1px 6px;
+    }
+
+    .y2k-lead-text {
+      font-size: 1.02rem;
+      margin-bottom: 10px;
+      color: #d6d3cd;
+    }
+
+    .y2k-inline-link {
+      color: var(--y2k-link);
+      text-decoration: underline;
+      cursor: pointer;
+      background: none;
+      border: none;
+      font-family: inherit;
+      font-size: inherit;
+    }
+
+    .y2k-inline-link:hover {
+      color: var(--y2k-link-hover);
+    }
+
+    .y2k-blockquote {
+      margin: 10px 0 22px 28px;
+      padding: 10px 14px;
+      border-left: 2px solid #7f1d1d;
+      background: rgba(20, 10, 12, 0.55);
+      font-family: 'Times New Roman', Georgia, serif;
+      font-size: 0.96rem;
+      line-height: 1.55;
+      color: #c7c2bc;
+    }
+
+    .y2k-section-divider {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      background: #140d0f;
+      border-top: 1px solid #451a1f;
+      border-bottom: 1px solid #451a1f;
+      padding: 5px 10px;
+      margin-bottom: 16px;
+      font-family: 'Courier New', monospace;
+      font-size: 0.82rem;
+      color: #f87171;
+    }
+
+    /* --- ตารางช่องตัวละครยุค 2000 (Y2K Character Slots Grid) --- */
+    .y2k-roster-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(235px, 1fr));
+      gap: 16px;
+    }
+
+    .y2k-char-slot {
+      background: #0b0b0e;
+      border-top: 2px solid #2e2e38;
+      border-left: 2px solid #2e2e38;
+      border-right: 2px solid #040406;
+      border-bottom: 2px solid #040406;
+      cursor: pointer;
+      display: flex;
+      flex-direction: column;
+      transition: transform 0.12s ease, border-color 0.15s ease;
+      position: relative;
+    }
+
+    .y2k-char-slot:hover {
+      border-color: var(--y2k-blood-bright);
+      background: #130c0e;
+      box-shadow: 0 0 18px rgba(204, 17, 17, 0.35);
+    }
+
+    /* แถบหัวหน้าต่างย่อยของการ์ดตัวละคร (Win98/2000 Title Bar) */
+    .y2k-slot-titlebar {
+      background: linear-gradient(90deg, #2b090c 0%, #16171d 100%);
+      border-bottom: 1px solid #332024;
+      padding: 4px 8px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      font-family: 'Courier New', monospace;
+      font-size: 0.74rem;
+      font-weight: bold;
+      color: #e4e4e7;
+    }
+
+    .y2k-slot-Select:hover .y2k-slot-titlebar {
+      background: linear-gradient(90deg, #7f1d1d 0%, #1f1215 100%);
+    }
+
+    .y2k-rank-stamp {
+      padding: 0 5px;
+      background: #111;
+      border: 1px solid var(--slot-color, #cc1111);
+      color: var(--slot-color, #ff4d4d);
+      font-size: 0.7rem;
+    }
+
+    .y2k-slot-portrait {
+      height: 175px;
+      width: 100%;
+      position: relative;
+      overflow: hidden;
+      background: #050507;
+      border-bottom: 1px solid #241b1d;
+    }
+
+    .y2k-slot-portrait img {
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+      filter: grayscale(45%) contrast(125%) brightness(0.82);
+      transition: filter 0.2s ease, transform 0.25s ease;
+    }
+
+    .y2k-char-slot:hover .y2k-slot-portrait img {
+      filter: grayscale(0%) contrast(140%) brightness(0.95) drop-shadow(0 0 8px var(--slot-color, #cc1111));
+      transform: scale(1.04);
+    }
+
+    .y2k-portrait-noise {
+      position: absolute;
+      inset: 0;
+      background: repeating-linear-gradient(
+        0deg,
+        rgba(0, 0, 0, 0.35) 0px,
+        rgba(0, 0, 0, 0.35) 1px,
+        transparent 1px,
+        transparent 3px
+      );
+      pointer-events: none;
+    }
+
+    .y2k-status-pill {
+      position: absolute;
+      bottom: 6px;
+      left: 6px;
+      background: rgba(5, 5, 8, 0.88);
+      border: 1px solid #3f2327;
+      padding: 1px 6px;
+      font-family: 'Courier New', monospace;
+      font-size: 0.68rem;
+      color: #fca5a5;
+      display: inline-flex;
+      align-items: center;
+      gap: 4px;
+    }
+
+    .y2k-led {
+      width: 6px;
+      height: 6px;
+      border-radius: 50%;
+      background: #ef4444;
+      display: inline-block;
+      box-shadow: 0 0 5px #ef4444;
+    }
+
+    .y2k-slot-body {
+      padding: 10px 12px;
+      flex: 1;
+      display: flex;
+      flex-direction: column;
+      justify-content: space-between;
+      gap: 8px;
+    }
+
+    .y2k-slot-role {
+      font-family: 'Courier New', monospace;
+      font-size: 0.66rem;
+      color: var(--slot-color, #f87171);
+      text-transform: uppercase;
+      font-weight: 600;
+    }
+
+    .role-fade {
+      display: inline-grid;
+      vertical-align: middle;
+      position: relative;
+      transition: opacity 630ms ease-out, filter 630ms ease-out;
+    }
+
+    .role-fade > span {
+      grid-area: 1 / 1;
+    }
+
+    .role-fade.is-fading {
+      opacity: 0;
+      filter: blur(1px);
+    }
+
+    .role-fade.is-sweeping::after {
+      display: none;
+    }
+
+    .role-fade.is-sweeping > span {
+      color: transparent;
+      -webkit-background-clip: text;
+      background-clip: text;
+      background-image: linear-gradient(100deg, var(--item-color, var(--slot-color, #f87171)) 35%, #ffffff 48%, #ffffff 52%, var(--item-color, var(--slot-color, #f87171)) 65%);
+      background-size: 220% 100%;
+      animation: roleLightSweep 630ms ease-out 1;
+    }
+
+    .role-fade > span.role-angelo {
+      color: #fff !important;
+    }
+
+    .role-fade.is-sweeping > span.role-angelo {
+      background-image: linear-gradient(100deg, #fff 35%, #e5e7eb 48%, #fff 52%, #fff 65%);
+    }
+
+    @keyframes roleLightSweep {
+      from { background-position: 200% 0; }
+      100% { background-position: -200% 0; }
+    }
+
+    .y2k-slot-name {
+      font-family: 'Times New Roman', Georgia, serif;
+      font-size: 1.45rem;
+      font-weight: 800;
+      color: #ffffff;
+      line-height: 1.15;
+    }
+
+    .y2k-slot-alias {
+      font-family: 'Tahoma', sans-serif;
+      font-size: 0.78rem;
+      color: var(--y2k-muted);
+    }
+
+    .y2k-slot-abilities-preview {
+      border-top: 1px dotted #2c2225;
+      padding-top: 6px;
+      font-family: 'Tahoma', sans-serif;
+      font-size: 0.75rem;
+      color: #b8b2a8;
+    }
+
+    .y2k-slot-abilities-preview strong {
+      color: #fca5a5;
+      font-weight: normal;
+      font-family: 'Courier New', monospace;
+    }
+
+    .y2k-slot-action-link {
+      margin-top: 4px;
+      font-family: 'Courier New', monospace;
+      font-size: 0.76rem;
+      color: var(--y2k-link);
+      text-decoration: underline;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+    }
+
+    .y2k-char-slot:hover .y2k-slot-action-link {
+      color: var(--y2k-link-hover);
+    }
+
+    /* --- คอลัมน์ขวา: แบนเนอร์สไตล์ Spyonit.com และรายการไฟล์ลับ (BEST BLOGS style) --- */
+    .y2k-sidebar {
+      display: flex;
+      flex-direction: column;
+      gap: 20px;
+      font-family: 'Tahoma', Geneva, sans-serif;
+    }
+
+    .y2k-spyonit-box {
+      text-align: center;
+      padding: 8px;
+      background: #100d0e;
+      border: 1px solid #2e1f22;
+    }
+
+    .y2k-spyonit-badge {
+      background: linear-gradient(180deg, #b45309 0%, #78350f 100%);
+      border: 2px outset #f59e0b;
+      color: #fffbeb;
+      padding: 6px 10px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      margin-bottom: 6px;
+      font-family: 'Courier New', monospace;
+      font-weight: 900;
+      font-size: 0.82rem;
+      text-align: left;
+      line-height: 1.1;
+      cursor: pointer;
+    }
+
+    .y2k-spyonit-badge:hover {
+      background: linear-gradient(180deg, #991b1b 0%, #450a0a 100%);
+      border-color: #ef4444;
+    }
+
+    .y2k-spyonit-desc {
+      font-size: 0.74rem;
+      line-height: 1.35;
+      color: #c7c2bc;
+    }
+
+    .y2k-side-section-title {
+      font-family: 'Courier New', monospace;
+      font-size: 0.78rem;
+      font-weight: 900;
+      letter-spacing: 0.5px;
+      text-transform: uppercase;
+      color: #ef4444;
+      margin-bottom: 6px;
+      border-bottom: 1px solid #331a1d;
+      padding-bottom: 3px;
+    }
+
+    .y2k-side-links {
+      list-style: none;
+      display: flex;
+      flex-direction: column;
+      gap: 5px;
+    }
+
+    .y2k-side-link-btn {
+      background: none;
+      border: none;
+      color: var(--y2k-link);
+      text-decoration: underline;
+      font-family: 'Times New Roman', Georgia, serif;
+      font-size: 0.95rem;
+      text-align: left;
+      cursor: pointer;
+      padding: 1px 0;
+    }
+
+    .y2k-side-link-btn:hover {
+      color: var(--y2k-link-hover);
+    }
+
+    .y2k-telemetry-box {
+      background: #060608;
+      border: 2px inset #26262e;
+      padding: 10px;
+      font-family: 'Courier New', monospace;
+      font-size: 0.74rem;
+      color: #9ca3af;
+      display: flex;
+      flex-direction: column;
+      gap: 6px;
+    }
+
+    .y2k-counter-digits {
+      display: inline-block;
+      background: #000;
+      border: 1px inset #333;
+      padding: 2px 6px;
+      color: #ff2a2a;
+      font-weight: bold;
+      letter-spacing: 2px;
+      font-size: 0.85rem;
+    }
+
+    /* =========================================================================
+       4. สไตล์หน้าเว็บหลักแบบเดิม (MODERN PRIMARY DATA 1.0 VIEW)
+       พร้อมปุ่มลับสำหรับคลิกเปิดเข้าสู่หน้าต่างยุค 2000
+       ========================================================================= */
+    #modernHcoView {
+      display: none;
+      font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+      background-color: var(--bg-main);
+      background-image:
+        radial-gradient(circle at 15% 15%, rgba(99, 102, 241, 0.12) 0%, transparent 40%),
+        radial-gradient(circle at 85% 85%, rgba(236, 72, 153, 0.1) 0%, transparent 40%);
+      color: var(--text-main);
+      min-height: calc(100vh - 37px);
+      line-height: 1.6;
+    }
+
+    .modern-header {
+      max-width: 1200px;
+      margin: 0 auto;
+      padding: 42px 24px 24px;
+      text-align: center;
+    }
+
+    .badge-header {
+      display: inline-block;
+      padding: 4px 14px;
+      font-size: 0.78rem;
+      font-weight: 700;
+      letter-spacing: 1.5px;
+      text-transform: uppercase;
+      color: #a5b4fc;
+      background: rgba(99, 102, 241, 0.15);
+      border: 1px solid rgba(99, 102, 241, 0.3);
+      border-radius: 999px;
+      margin-bottom: 12px;
+    }
+
+    .modern-header h1 {
+      font-size: 2.5rem;
+      font-weight: 800;
+      letter-spacing: -0.5px;
+      margin-bottom: 8px;
+      background: linear-gradient(135deg, #ffffff 0%, #a5b4fc 100%);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+    }
+
+    .modern-header p {
+      color: var(--text-muted);
+      max-width: 600px;
+      margin: 0 auto 18px;
+      font-size: 1rem;
+    }
+
+    /* ปุ่มลับบนหน้าเว็บเดิม กดคลิกแล้วเปิดหน้าต่างยุค 2000 โทนมืด */
+    .secret-archive-portal-btn {
+      display: inline-flex;
+      align-items: center;
+      gap: 10px;
+      margin-bottom: 24px;
+      padding: 10px 20px;
+      background: linear-gradient(90deg, #1f080b 0%, #3b0a11 50%, #1f080b 100%);
+      border: 1px solid #dc2626;
+      border-radius: 8px;
+      color: #fecaca;
+      font-family: 'Courier New', monospace;
+      font-size: 0.88rem;
+      font-weight: bold;
+      cursor: pointer;
+      animation: pulseRed 2.5s infinite;
+      transition: transform 0.2s ease;
+    }
+
+    .secret-archive-portal-btn:hover {
+      transform: scale(1.03);
+      background: #7f1d1d;
+      color: #ffffff;
+    }
+
+    .controls {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 12px;
+      justify-content: center;
+      align-items: center;
+      margin-bottom: 20px;
+    }
+
+    .search-box {
+      position: relative;
+      width: 100%;
+      max-width: 320px;
+    }
+
+    .search-box input {
+      width: 100%;
+      padding: 10px 16px;
+      background: var(--bg-card);
+      border: 1px solid var(--border-color);
+      border-radius: 999px;
+      color: var(--text-main);
+      font-size: 0.95rem;
+      outline: none;
+    }
+
+    .filter-group {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 8px;
+      justify-content: center;
+    }
+
+    .filter-btn {
+      padding: 8px 16px;
+      background: var(--bg-card);
+      border: 1px solid var(--border-color);
+      border-radius: 999px;
+      color: var(--text-muted);
+      font-size: 0.88rem;
+      font-weight: 600;
+      cursor: pointer;
+      transition: all 0.2s ease;
+    }
+
+    .filter-btn:hover,
+    .filter-btn.active {
+      background: var(--accent);
+      color: #ffffff;
+      border-color: var(--accent);
+    }
+
+    .modern-container {
+      max-width: 1200px;
+      margin: 0 auto;
+      padding: 12px 24px 64px;
+    }
+
+    .roster-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(260px, 1fr));
+      gap: 24px;
+    }
+
+    .member-item {
+      background: var(--bg-card);
+      border: 1px solid var(--border-color);
+      border-radius: 16px;
+      overflow: hidden;
+      cursor: pointer;
+      transition: all 0.25s ease;
+      display: flex;
+      flex-direction: column;
+    }
+
+    .member-item:hover {
+      transform: translateY(-6px);
+      background: var(--bg-card-hover);
+      border-color: var(--item-color, var(--accent));
+    }
+
+    .member-thumb {
+      height: 220px;
+      width: 100%;
+      position: relative;
+      overflow: hidden;
+    }
+
+    .member-thumb img {
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+    }
+
+    .member-id-tag {
+      position: absolute;
+      top: 12px;
+      left: 12px;
+      background: rgba(15, 17, 26, 0.75);
+      padding: 4px 10px;
+      border-radius: 6px;
+      font-size: 0.75rem;
+      font-weight: 700;
+      color: var(--text-main);
+    }
+
+    .member-rank-tag {
+      position: absolute;
+      top: 12px;
+      right: 12px;
+      padding: 3px 10px;
+      border-radius: 6px;
+      font-size: 0.75rem;
+      font-weight: 800;
+      color: #fff;
+      background: var(--item-color, var(--accent));
+    }
+
+    .member-info {
+      padding: 18px 20px;
+      flex: 1;
+      display: flex;
+      flex-direction: column;
+      justify-content: space-between;
+    }
+
+    .member-role {
+      font-size: 0.68rem;
+      text-transform: uppercase;
+      color: var(--item-color, #a5b4fc);
+      font-weight: 600;
+    }
+
+    .member-name {
+      font-size: 1.5rem;
+      font-weight: 800;
+      color: #fff;
+    }
+
+    .member-alias {
+      font-size: 0.88rem;
+      color: var(--text-muted);
+      margin-bottom: 14px;
+    }
+
+    .click-hint {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding-top: 12px;
+      border-top: 1px solid var(--border-color);
+      font-size: 0.82rem;
+      color: var(--text-muted);
+      font-weight: 600;
+    }
+
+    /* =========================================================================
+       5. หน้าต่างแสดงข้อมูลตัวละครและ "ตัวละครทำอะไรได้บ้าง" (Character & Abilities Modal)
+       ปรับเป็นหน้าต่างแฟ้มลับยุค 2000 (Win98/2000 Dark Dossier Window)
+       ========================================================================= */
+    .modal-overlay {
+      position: fixed;
+      inset: 0;
+      background: rgba(3, 3, 5, 0.86);
+      backdrop-filter: blur(4px);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      padding: 16px;
+      z-index: 2500;
+      opacity: 0;
+      pointer-events: none;
+      transition: opacity 0.2s ease;
+    }
+
+    .modal-overlay.open {
+      opacity: 1;
+      pointer-events: auto;
+    }
+
+    .character-card {
+      width: 100%;
+      max-width: 900px;
+      background: #0c0c10;
+      border-top: 2px solid #52525b;
+      border-left: 2px solid #52525b;
+      border-right: 2px solid #050507;
+      border-bottom: 2px solid #050507;
+      box-shadow: 0 25px 70px rgba(0, 0, 0, 0.95), 0 0 30px rgba(185, 28, 28, 0.25);
+      display: flex;
+      flex-direction: column;
+      max-height: 92vh;
+      overflow: hidden;
+    }
+
+    /* แถบหัวหน้าต่าง Modal สไตล์โปรแกรมยุค 2000 */
+    .y2k-modal-windowbar {
+      background: linear-gradient(90deg, #450a0a 0%, #18181b 65%, #09090b 100%);
+      border-bottom: 2px solid #27272a;
+      padding: 5px 10px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      font-family: 'Tahoma', sans-serif;
+      font-size: 12px;
+      font-weight: bold;
+      color: #f4f4f5;
+    }
+
+    .y2k-window-title {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+
+    .close-btn {
+      width: 24px;
+      height: 22px;
+      background: #27272a;
+      border-top: 1px solid #71717a;
+      border-left: 1px solid #71717a;
+      border-right: 1px solid #09090b;
+      border-bottom: 1px solid #09090b;
+      color: #fff;
+      font-family: 'Tahoma', sans-serif;
+      font-size: 13px;
+      font-weight: bold;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+
+    .close-btn:hover {
+      background: #dc2626;
+    }
+
+    .character-card-grid {
+      display: grid;
+      grid-template-columns: 290px 1fr;
+      overflow-y: auto;
+      flex: 1;
+    }
+
+    /* ฝั่งซ้าย: รูปตัวละคร + คำคม + สถานะจิต */
+    .card-visual {
+      background: #070709;
+      border-right: 2px solid #1f1f26;
+      display: flex;
+      flex-direction: column;
+      justify-content: space-between;
+      position: relative;
+    }
+
+    .card-visual-img-wrap {
+      position: relative;
+      height: 300px;
+      width: 100%;
+      overflow: hidden;
+      border-bottom: 1px solid #27171a;
+    }
+
+    .card-visual-img {
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+      filter: contrast(1.2) brightness(0.9);
+    }
+
+    .card-visual-overlay {
+      padding: 16px;
+      background: #09090c;
+      flex: 1;
+      display: flex;
+      flex-direction: column;
+      justify-content: space-between;
+      gap: 12px;
+    }
+
+    .card-id-badge {
+      display: inline-block;
+      align-self: flex-start;
+      padding: 3px 8px;
+      font-family: 'Courier New', monospace;
+      font-size: 0.78rem;
+      font-weight: 800;
+      background: #7f1d1d;
+      border: 1px solid #ef4444;
+      color: #fff;
+    }
+
+    .card-quote {
+      font-family: 'Times New Roman', Georgia, serif;
+      font-style: italic;
+      font-size: 0.95rem;
+      color: #d6d3cd;
+      border-left: 3px solid var(--card-accent, #cc1111);
+      padding-left: 10px;
+    }
+
+    .y2k-anomaly-warning {
+      background: #14080a;
+      border: 1px dashed #7f1d1d;
+      padding: 8px 10px;
+      font-family: 'Courier New', monospace;
+      font-size: 0.74rem;
+      color: #fca5a5;
+      line-height: 1.45;
+    }
+
+    /* ฝั่งขวา: รายละเอียดตัวละคร และ ตัวละครทำอะไรได้บ้าง */
+    .card-details {
+      padding: 20px 24px;
+      display: flex;
+      flex-direction: column;
+      gap: 18px;
+      overflow-y: auto;
+      font-family: 'Tahoma', Geneva, sans-serif;
+    }
+
+    .card-header-info {
+      border-bottom: 1px solid #272730;
+      padding-bottom: 12px;
+    }
+
+    .card-role-label {
+      font-family: 'Courier New', monospace;
+      font-size: 0.72rem;
+      font-weight: 600;
+      text-transform: uppercase;
+      color: var(--card-accent, #ef4444);
+    }
+
+    .card-title-name {
+      font-family: 'Times New Roman', Georgia, serif;
+      font-size: 2.4rem;
+      font-weight: 800;
+      color: #fff;
+      line-height: 1.15;
+      margin: 2px 0 4px;
+    }
+
+    .card-subtitle {
+      font-family: 'Courier New', monospace;
+      font-size: 0.88rem;
+      color: var(--y2k-muted);
+    }
+
+    .meta-grid {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 8px;
+    }
+
+    .meta-box {
+      background: #121217;
+      border: 2px inset #262630;
+      padding: 7px 10px;
+    }
+
+    .meta-label {
+      font-family: 'Courier New', monospace;
+      font-size: 0.7rem;
+      text-transform: uppercase;
+      color: #9ca3af;
+      display: block;
+    }
+
+    .meta-value {
+      font-size: 0.9rem;
+      font-weight: 700;
+      color: #f3f4f6;
+    }
+
+    .section-title {
+      font-family: 'Courier New', monospace;
+      font-size: 0.8rem;
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: 0.8px;
+      color: #f87171;
+      margin-bottom: 8px;
+      border-bottom: 1px solid #2d1619;
+      padding-bottom: 3px;
+    }
+
+    .card-bio {
+      font-family: 'Times New Roman', Georgia, serif;
+      font-size: 1rem;
+      color: #d6d3cd;
+      line-height: 1.6;
+    }
+
+    /* กล่องอธิบายว่า "ตัวละครทำอะไรได้บ้าง" (Interactive Ability Cards) */
+    .abilities-detailed-list {
+      display: flex;
+      flex-direction: column;
+      gap: 10px;
+    }
+
+    .ability-detail-item {
+      background: #121014;
+      border: 1px solid #382024;
+      padding: 10px 12px;
+      transition: border-color 0.15s ease, background 0.15s ease;
+    }
+
+    .ability-detail-item:hover {
+      border-color: var(--card-accent, #ef4444);
+      background: #191216;
+    }
+
+    .ability-top-row {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 8px;
+      margin-bottom: 4px;
+      flex-wrap: wrap;
+    }
+
+    .ability-name-badge {
+      font-family: 'Courier New', monospace;
+      font-size: 0.9rem;
+      font-weight: bold;
+      color: #ffd60a;
+    }
+
+    .ability-type-tag {
+      font-family: 'Courier New', monospace;
+      font-size: 0.7rem;
+      padding: 1px 6px;
+      background: #271215;
+      border: 1px solid #7f1d1d;
+      color: #fca5a5;
+    }
+
+    .ability-desc-text {
+      font-size: 0.86rem;
+      color: #d4d4d8;
+      line-height: 1.5;
+      margin-bottom: 8px;
+    }
+
+    .ability-test-btn {
+      background: #1f1f29;
+      color: #93c5fd;
+      border: 1px outset #3f3f52;
+      padding: 3px 10px;
+      font-family: 'Courier New', monospace;
+      font-size: 0.74rem;
+      cursor: pointer;
+    }
+
+    .ability-test-btn:hover {
+      background: #7f1d1d;
+      color: #ffffff;
+      border-color: #ef4444;
+    }
+
+    /* หน้าจอจำลองผลการใช้ความสามารถ (Combat / Action Terminal Log) */
+    .ability-terminal-log {
+      margin-top: 8px;
+      background: #040406;
+      border: 2px inset #272730;
+      padding: 8px 12px;
+      font-family: 'Courier New', monospace;
+      font-size: 0.78rem;
+      color: #4ade80;
+      min-height: 54px;
+      line-height: 1.45;
+    }
+
+    /* หลอดค่าสถานะ (Stats Bars) รองรับค่าทะลุเพดาน (Overlimit > 100) */
+    .stats-list {
+      display: flex;
+      flex-direction: column;
+      gap: 8px;
+    }
+
+    .stat-row {
+      display: grid;
+      grid-template-columns: 95px 1fr 78px;
+      align-items: center;
+      gap: 10px;
+      font-family: 'Courier New', monospace;
+      font-size: 0.8rem;
+    }
+
+    .stat-name {
+      font-weight: bold;
+      color: #e5e7eb;
+    }
+
+    .stat-bar-bg {
+      width: 100%;
+      height: 10px;
+      background: #060609;
+      border: 1px inset #272730;
+      overflow: hidden;
+    }
+
+    .stat-bar-fill {
+      height: 100%;
+      background: var(--card-accent, #cc1111);
+      width: 0%;
+      transition: width 0.55s ease;
+    }
+
+    .stat-bar-fill.overlimit {
+      background: repeating-linear-gradient(
+        45deg,
+        #dc2626,
+        #dc2626 6px,
+        #f59e0b 6px,
+        #f59e0b 12px
+      );
+    }
+
+    .stat-val {
+      text-align: right;
+      font-weight: bold;
+      color: #d4d4d8;
+    }
+
+    .stat-val.overlimit-text {
+      color: #ff4d4d;
+    }
+
+    /* ป้ายทักษะแบบย่อ (รองรับ ID เดิมจากไฟล์ต้นฉบับ) */
+    .skills-wrap {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 6px;
+    }
+
+    .skill-tag {
+      padding: 3px 9px;
+      font-family: 'Courier New', monospace;
+      font-size: 0.76rem;
+      background: #181820;
+      border: 1px solid #333342;
+      color: #e5e7eb;
+      cursor: pointer;
+    }
+
+    .skill-tag:hover {
+      border-color: #ef4444;
+      color: #fca5a5;
+    }
+
+    /* หน้าต่างแจ้งเตือน/บันทึกข้อมูลลับยุค 2000 (System Dialog Modal) */
+    .sys-dialog-overlay {
+      position: fixed;
+      inset: 0;
+      background: rgba(0, 0, 0, 0.75);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      padding: 16px;
+      z-index: 2600;
+      opacity: 0;
+      pointer-events: none;
+      transition: opacity 0.15s ease;
+    }
+
+    .sys-dialog-overlay.open {
+      opacity: 1;
+      pointer-events: auto;
+    }
+
+    .sys-dialog-box {
+      width: 100%;
+      max-width: 520px;
+      background: #16161d;
+      border-top: 2px solid #525263;
+      border-left: 2px solid #525263;
+      border-right: 2px solid #050507;
+      border-bottom: 2px solid #050507;
+      box-shadow: 8px 8px 0 rgba(0, 0, 0, 0.85);
+      font-family: 'Tahoma', sans-serif;
+    }
+
+    .sys-dialog-body {
+      padding: 16px;
+      font-family: 'Courier New', monospace;
+      font-size: 0.85rem;
+      color: #e4e4e7;
+      line-height: 1.55;
+      max-height: 70vh;
+      overflow-y: auto;
+    }
+
+    @media (max-width: 820px) {
+      .y2k-columns {
+        grid-template-columns: 1fr;
+      }
+      .character-card-grid {
+        grid-template-columns: 1fr;
+      }
+      .card-visual-img-wrap {
+        height: 230px;
+      }
+    }
+  </style>
+</head>
+<body>
+
+  <!-- เส้นสแกนจอภาพเก่า CRT (เปิด/ปิดได้จากแถบเครื่องมือ) -->
+  <div class="crt-overlay" id="crtOverlay"></div>
+
+  <!-- แถบสลับโหมดด้านบนสุด เพื่อให้ทดสอบได้ทั้ง "หน้าต่างลับยุค 2000" และ "การกดคลิกจากหน้าเว็บเดิม" -->
+  <div class="preview-switcher">
+    <div class="switcher-left">
+      <span class="switcher-badge">HCO SYSTEM PREVIEW</span>
+      <span>จำลองการทำงาน: กดสลับดูระหว่าง <strong>หน้าเว็บหลักแบบเดิม</strong> กับ <strong>หน้าต่างลับยุค 2000 (หลังกดคลิก)</strong></span>
+    </div>
+    <div class="switcher-btns">
+      <button type="button" class="switch-view-btn active" id="btnShowY2kView">👁️ หน้าต่างลับ ยุค 2000 (Dark Archive)</button>
+      <button type="button" class="switch-view-btn" id="btnShowModernView">🌐 หน้าเว็บหลักเดิม (PRIMARY DATA 1.0)</button>
+    </div>
+  </div>
+
+  <!-- =========================================================================
+       หน้าต่างที่ 1: เว็บไซต์ยุค 2000 โทนมืด-หลอน (เปิดขึ้นมาหลังจากกดคลิกจากหน้าหลัก)
+       ออกแบบตามตัวอย่าง BoingBoing ปี 2000 + หน้าช่องตัวละครและระบบดูความสามารถ
+       ========================================================================= -->
+  <section id="y2kArchiveView">
+    <!-- แถบเบราว์เซอร์ยุคปี 2000 (Bookmarks / Location / Toolbar) -->
+    <div class="y2k-browser-chrome">
+      <div class="y2k-chrome-row">
+        <button type="button" class="y2k-chrome-btn" id="y2kBookmarksBtn">📑 Bookmarks ▾</button>
+        <span class="y2k-location-label">Location:</span>
+        <input type="text" class="y2k-address-bar" id="y2kAddressInput" value="http://hco-intranet.org/archive_2000/vessels_directory.htm" readonly />
+        <button type="button" class="y2k-chrome-btn" id="y2kAudioToggleBtn">🔇 Sound: OFF</button>
+        <button type="button" class="y2k-chrome-btn" id="y2kCrtToggleBtn">📺 CRT: ON</button>
+        <button type="button" class="y2k-chrome-btn" id="y2kBackToModernBtn">↩ กลับหน้าเว็บหลัก HCO 1.0</button>
+      </div>
+      <div class="y2k-toolbar-links">
+        <button type="button" class="y2k-tool-item" data-log="webmail"><span class="y2k-slash-icon"></span>WebMail (3)</button>
+        <button type="button" class="y2k-tool-item" data-log="calendar"><span class="y2k-slash-icon"></span>Eclipse_Calendar</button>
+        <button type="button" class="y2k-tool-item" data-log="radio"><span class="y2k-slash-icon"></span>Dead_Radio</button>
+        <button type="button" class="y2k-tool-item" data-log="people"><span class="y2k-slash-icon"></span>Missing_Vessels</button>
+        <button type="button" class="y2k-tool-item" data-log="yellowpages"><span class="y2k-slash-icon"></span>Black_Pages</button>
+        <button type="button" class="y2k-tool-item" data-log="download"><span class="y2k-slash-icon"></span>Download_Autopsy</button>
+        <button type="button" class="y2k-tool-item" data-log="customize"><span class="y2k-slash-icon"></span>Terminal_Config...</button>
+      </div>
+    </div>
+
+    <!-- ตัวหน้ากระดาษเว็บยุค 2000 โทนมืด -->
+    <div class="y2k-page-wrap">
+      <!-- ส่วนหัวโลโก้ + มาสคอตพิกเซลหลอนๆ สไตล์เดียวกับภาพตัวอย่าง -->
+      <div class="y2k-header-banner">
+        <div class="y2k-logo-box">
+          <div class="y2k-logo-text">Primary</div>
+        </div>
+
+        <div class="y2k-mascot-wrap">
+          <!-- ภาพมาสคอต 1-bit Pixel/Line Art หุ่นนักประดาน้ำเนบิวลาดวงตาที่สาม -->
+          <svg class="y2k-mascot-svg" viewBox="0 0 80 100" xmlns="http://www.w3.org/2000/svg">
+            <rect width="80" height="100" fill="#050507"/>
+            <!-- กรอบพิกเซล -->
+            <rect x="24" y="8" width="32" height="26" fill="none" stroke="#d8d4cf" stroke-width="2"/>
+            <rect x="28" y="13" width="24" height="14" fill="#1a0709" stroke="#cc1111" stroke-width="1.5"/>
+            <!-- ดวงตาหลอนกะพริบได้ -->
+            <g style="transform-origin: 40px 20px; animation: eyeBlink 4.5s infinite;">
+              <circle cx="34" cy="20" r="2.5" fill="#ff2a2a"/>
+              <circle cx="46" cy="20" r="2.5" fill="#ff2a2a"/>
+              <circle cx="40" cy="16" r="2" fill="#ffd60a"/>
+            </g>
+            <!-- รอยยิ้มซี่กรง -->
+            <line x1="31" y1="30" x2="49" y2="30" stroke="#d8d4cf" stroke-width="2"/>
+            <!-- ลำตัวชุดป้องกันยุคเก่า -->
+            <rect x="18" y="36" width="44" height="38" fill="#121217" stroke="#d8d4cf" stroke-width="2"/>
+            <line x1="28" y1="36" x2="28" y2="74" stroke="#d8d4cf" stroke-width="2"/>
+            <line x1="52" y1="36" x2="52" y2="74" stroke="#d8d4cf" stroke-width="2"/>
+            <!-- สัญลักษณ์เนบิวลากลางอก -->
+            <polygon points="40,44 47,56 33,56" fill="none" stroke="#ff2a2a" stroke-width="1.8"/>
+            <circle cx="40" cy="52" r="2" fill="#ffd60a"/>
+            <!-- แขนและขา -->
+            <rect x="10" y="38" width="8" height="28" fill="none" stroke="#d8d4cf" stroke-width="2"/>
+            <rect x="62" y="38" width="8" height="28" fill="none" stroke="#d8d4cf" stroke-width="2"/>
+            <rect x="24" y="74" width="12" height="20" fill="none" stroke="#d8d4cf" stroke-width="2"/>
+            <rect x="44" y="74" width="12" height="20" fill="none" stroke="#d8d4cf" stroke-width="2"/>
+          </svg>
+
+          <div>
+            <div class="y2k-tagline">A DIRECTORY OF FORBIDDEN VESSELS &amp; NEBULA ANOMALIES</div>
+            <span class="y2k-sub-classification">HERMETIC CONSTELLATION ORDER // INTERNAL SERVER [EST. JUNE 2000]</span>
+          </div>
+        </div>
+      </div>
+
+      <!-- แถบลิงก์คั่นด้วย | (Pipe Navigation) + ช่องค้นหาแบบบุ๋ม (Sunken Search) -->
+      <div class="y2k-nav-search-bar">
+        <div class="y2k-pipe-links" id="y2kFilterGroup">
+          <button type="button" class="y2k-filter-link active" data-filter="ALL">all_files</button> |
+          <button type="button" class="y2k-filter-link" data-filter="Angelo">angelo_unit</button> |
+          <button type="button" class="y2k-filter-link" data-filter="Extraordinary">extraordinary</button> |
+          <button type="button" class="y2k-filter-link" data-filter="Tactician">tactician</button> |
+          <button type="button" class="y2k-filter-link" data-filter="WhiteForce">whiteforce</button> |
+          <button type="button" class="y2k-filter-link" data-filter="Vanguard">vanguard</button> |
+          <button type="button" class="y2k-filter-link" data-filter="Support">support</button> |
+          <button type="button" class="y2k-filter-link" data-filter="Explorer">explorer</button> |
+          <button type="button" class="y2k-filter-link" data-filter="S">s_class</button>
+        </div>
+
+        <div class="y2k-search-form">
+          <input type="text" class="y2k-sunken-input" id="y2kSearchInput" placeholder="ค้นหาชื่อ, โค้ดเนม, ทักษะ..." />
+          <button type="button" class="y2k-bevel-btn" id="y2kSearchBtn">Search</button>
+          <button type="button" class="y2k-bevel-btn" id="y2kResetBtn">Reset</button>
+        </div>
+      </div>
+
+      <!-- โครงสร้าง 2 คอลัมน์แบบเว็บปี 2000 -->
+      <div class="y2k-columns">
+        <!-- คอลัมน์ซ้าย: บันทึกประจำวันหลอนๆ + ตารางช่องตัวละคร -->
+        <div>
+          <div class="y2k-date-heading">
+            <span>Monday, June 19, 2000</span>
+            <span class="y2k-corrupt-tag">LOG #00-NEBULA // RESTRICTED</span>
+          </div>
+
+          <p class="y2k-lead-text">
+            More <button type="button" class="y2k-inline-link" id="openAutopsyReportLink">nebula_vessel_autopsy.htm</button> — บันทึกลับผู้ถือครองพลังเนบิวลารุ่นก่อตั้ง:
+          </p>
+
+          <blockquote class="y2k-blockquote">
+            "พวกเราอยู่ในห้องทดลองใต้ดินที่ Sector-09 ตอนที่คลื่นเนบิวลาปะทุครั้งแรก ไม่มีใครรู้ว่าผู้ที่รอดชีวิตออกมาได้ยังเป็นมนุษย์อยู่หรือเปล่า... หากคุณเข้าถึงหน้าต่างนี้ได้ โปรดคลิกที่ <strong>ช่องแฟ้มตัวละครด้านล่าง</strong> เพื่อตรวจสอบว่าแต่ละคนสามารถทำอะไรได้บ้าง ก่อนที่สัญญาณจะถูกตัด"
+          </blockquote>
+
+          <div class="y2k-section-divider">
+            <span>▼ SUBJECT ROSTER // ช่องข้อมูลตัวละคร (คลิกที่การ์ดเพื่อดูว่าตัวละครทำอะไรได้บ้าง)</span>
+            <span id="y2kCountLabel">[FOUND: 6 VESSELS]</span>
+          </div>
+
+          <!-- ตารางแสดงช่องตัวละคร (Y2K Character Slots) -->
+          <div class="y2k-roster-grid" id="y2kRosterGrid"></div>
+        </div>
+
+        <!-- คอลัมน์ขวา: แบนเนอร์สไตล์ Spyonit.com + ลิงก์คลังข้อมูลลับ -->
+        <aside class="y2k-sidebar">
+          <div class="y2k-spyonit-box">
+            <button type="button" class="y2k-spyonit-badge" id="anomalyScanBtn" title="คลิกเพื่อสแกนหาความผิดปกติ">
+              <span>nebulawatch<br/>.sys</span>
+              <span style="font-size: 1.35rem;">👁️</span>
+            </button>
+            <p class="y2k-spyonit-desc">
+              Let <button type="button" class="y2k-inline-link" id="spyonitTextLink">NebulaWatch.sys</button> notify you when an HCO Subject breaches containment or mutates.
+            </p>
+          </div>
+
+          <div>
+            <div class="y2k-side-section-title">CLASSIFIED ARCHIVES</div>
+            <ul class="y2k-side-links">
+              <li><button type="button" class="y2k-side-link-btn" data-incident="primary">Project_Primary_1999</button></li>
+              <li><button type="button" class="y2k-side-link-btn" data-incident="nebula">Nebula_Overlimit_Theory</button></li>
+              <li><button type="button" class="y2k-side-link-btn" data-incident="shadow">Shadow_Guild_Redacted</button></li>
+              <li><button type="button" class="y2k-side-link-btn" data-incident="tape04">Audio_Transcript_04.txt</button></li>
+            </ul>
+          </div>
+
+          <div>
+            <div class="y2k-side-section-title">QUICK SUBJECT JUMP</div>
+            <ul class="y2k-side-links" id="y2kQuickJumpList"></ul>
+          </div>
+
+          <div class="y2k-telemetry-box">
+            <div>VISITOR COUNTER:</div>
+            <div><span class="y2k-counter-digits" id="visitorCounter">0006619</span></div>
+            <div style="margin-top:4px;">NEBULA RADIATION: <strong style="color:#ef4444;">89.4 mSv (HIGH)</strong></div>
+            <div>SERVER NODE: <strong>HCO-BKK-2000</strong></div>
+          </div>
+        </aside>
+      </div>
+    </div>
+  </section>
+
+  <!-- =========================================================================
+       หน้าต่างที่ 2: หน้าเว็บหลักแบบเดิม (PRIMARY DATA 1.0)
+       มีปุ่มกดคลิกเพื่อเปิดเข้าสู่หน้าต่างลับยุค 2000 โทนมืด
+       ========================================================================= -->
+  <section id="modernHcoView">
+    <header class="modern-header">
+      <span class="badge-header">PRIMARY DATA 1.0</span>
+      <h1>Primary</h1>
+      <p>ระบบฐานข้อมูลสมาชิกในองค์กร Primary คลิกที่การ์ดสมาชิกเพื่อเปิดดูข้อมูล หรือคลิกปุ่มฐานข้อมูลลับด้านล่างเพื่อเปิดหน้าต่างคลังข้อมูลมืดยุคปี 2000</p>
+
+      <!-- ปุ่มกดคลิกเพื่อเปิดอีกหน้าต่างหนึ่ง (หน้าเว็บยุค 2000 โทนมืดหลอน) -->
+      <div>
+        <button type="button" class="secret-archive-portal-btn" id="openDarkArchiveFromModernBtn">
+          <span>⚠️ [CLASSIFIED_ARCHIVE_2000.HTM]</span>
+          <span>คลิกเพื่อเปิดหน้าต่างฐานข้อมูลลับยุค 2000 &rarr;</span>
+        </button>
+      </div>
+
+      <div class="controls">
+        <div class="search-box">
+          <input type="text" id="searchInput" placeholder="ค้นหาชื่อ, โค้ดเนม หรือสายงาน..." />
+        </div>
+        <div class="filter-group" id="filterGroup">
+          <button type="button" class="filter-btn active" data-role="ALL">ทั้งหมด</button>
+          <button type="button" class="filter-btn" data-role="Angelo">Angelo</button>
+          <button type="button" class="filter-btn" data-role="Extraordinary">Extraordinary</button>
+          <button type="button" class="filter-btn" data-role="Tactician">Tactician</button>
+          <button type="button" class="filter-btn" data-role="WhiteForce">WhiteForce</button>
+          <button type="button" class="filter-btn" data-role="Vanguard">Vanguard</button>
+          <button type="button" class="filter-btn" data-role="Support">Support</button>
+          <button type="button" class="filter-btn" data-role="Explorer">Explorer</button>
+        </div>
+      </div>
+    </header>
+
+    <main class="modern-container">
+      <div class="roster-grid" id="rosterGrid"></div>
+    </main>
+  </section>
+
+  <!-- =========================================================================
+       หน้าต่าง Modal แสดงการ์ดตัวละครและ "ตัวละครทำอะไรได้บ้าง" (Character & Abilities Modal)
+       ========================================================================= -->
+  <div class="modal-overlay" id="cardModal" aria-hidden="true">
+    <div class="character-card" id="characterCard">
+      <div class="y2k-modal-windowbar">
+        <div class="y2k-window-title">
+          <span>📁 C:\HCO_ARCHIVE_2000\SUBJECT_DOSSIER\</span>
+          <span id="modalWindowFilename">MEM-001.EXE</span>
+        </div>
+        <button type="button" class="close-btn" id="closeModalBtn" title="ปิดหน้าต่าง">&times;</button>
+      </div>
+
+      <div class="character-card-grid">
+        <!-- ฝั่งซ้าย: รูปภาพตัวละคร คำคม และบันทึกความอันตราย -->
+        <div class="card-visual">
+          <div class="card-visual-img-wrap">
+            <img src="data:image/gif;base64,R0lGODlhAQABAIAAAAAAAP///yH5BAEAAAAALAAAAAABAAEAAAIBRAA7" alt="Character Portrait" class="card-visual-img" id="modalImg" />
+            <div class="y2k-portrait-noise"></div>
+          </div>
+          <div class="card-visual-overlay">
+            <div>
+              <span class="card-id-badge" id="modalIdBadge">ID-001</span>
+              <p class="card-quote" id="modalQuote">"คำคมประจำตัวละคร"</p>
+            </div>
+            <div class="y2k-anomaly-warning" id="modalWarningBox">
+              [WARNING]: ตรวจพบคลื่นความถี่เนบิวลาผิดปกติในแฟ้มข้อมูลนี้
+            </div>
+          </div>
+        </div>
+
+        <!-- ฝั่งขวา: ข้อมูลตัวละคร + ตัวละครทำอะไรได้บ้าง (Abilities) + ค่าสถานะ -->
+        <div class="card-details">
+          <div class="card-header-info">
+            <div class="card-role-label" id="modalRole">ROLE</div>
+            <h2 class="card-title-name" id="modalName">Character Name</h2>
+            <div class="card-subtitle" id="modalAlias">Codename / Alias</div>
+          </div>
+
+          <div class="meta-grid">
+            <div class="meta-box">
+              <span class="meta-label">สังกัด / หน่วย</span>
+              <span class="meta-value" id="modalFaction">-</span>
+            </div>
+            <div class="meta-box">
+              <span class="meta-label">ระดับ (Rank)</span>
+              <span class="meta-value" id="modalRank">-</span>
+            </div>
+            <div class="meta-box">
+              <span class="meta-label">สถานะ</span>
+              <span class="meta-value" id="modalStatus">-</span>
+            </div>
+          </div>
+
+          <div>
+            <div class="section-title">ประวัติและบันทึกความลับ (Biography &amp; File Record)</div>
+            <p class="card-bio" id="modalBio"></p>
+          </div>
+
+          <!-- ส่วนสำคัญ: ตัวละครทำอะไรได้บ้าง (Detailed Abilities & Combat Simulation) -->
+          <div>
+            <div class="section-title">⚡ ตัวละครทำอะไรได้บ้าง (Abilities &amp; Field Actions — คลิกปุ่มเพื่อจำลองการใช้พลัง)</div>
+            <div class="abilities-detailed-list" id="modalAbilitiesDetailed"></div>
+            <div class="ability-terminal-log" id="abilitySimTerminal">
+              &gt; SYSTEM READY: คลิกที่ปุ่ม [▶ ทดสอบการใช้ทักษะ] ด้านบนเพื่อดูการทำงานของพลังตัวละคร...
+            </div>
+          </div>
+
+          <div>
+            <div class="section-title">ค่าความสามารถ (Parameters)</div>
+            <div class="stats-list" id="modalStats"></div>
+          </div>
+
+          <div>
+            <div class="section-title">รายการทักษะย่อ (Skill Tags)</div>
+            <div class="skills-wrap" id="modalSkills"></div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- หน้าต่างแจ้งเตือน/อ่านไฟล์บันทึกยุค 2000 (System Lore Dialog) -->
+  <div class="sys-dialog-overlay" id="sysDialogModal" aria-hidden="true">
+    <div class="sys-dialog-box">
+      <div class="y2k-modal-windowbar">
+        <span id="sysDialogTitle">C:\HCO_ARCHIVE\LOG_VIEWER.EXE</span>
+        <button type="button" class="close-btn" id="closeSysDialogBtn">&times;</button>
+      </div>
+      <div class="sys-dialog-body" id="sysDialogContent"></div>
+    </div>
+  </div>
+
+  <script>
+    /* =========================================================================
+       ส่วนข้อมูลสมาชิกและรายละเอียดว่า "ตัวละครทำอะไรได้บ้าง"
+       (สามารถแก้ไข เพิ่มเติมตัวละคร ทักษะ และเปลี่ยนลิงก์รูปภาพได้ที่นี่ที่เดียว!)
+       ========================================================================= */
+
+    // ฟังก์ชันสร้างภาพ Avatar สไตล์แฟ้มลับมืดหลอนยุค 2000 (มีสัญลักษณ์ดวงตา/ตราเวทและเส้นสแกน)
+    function createPlaceholderAvatar(initials, bgHex, accentHex) {
+      const svg = `
+      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 400 500" width="100%" height="100%">
+        <defs>
+          <linearGradient id="g-${initials}" x1="0%" y1="0%" x2="100%" y2="100%">
+            <stop offset="0%" stop-color="${bgHex}" />
+            <stop offset="60%" stop-color="#09090d" />
+            <stop offset="100%" stop-color="#030305" />
+          </linearGradient>
+        </defs>
+        <rect width="400" height="500" fill="url(#g-${initials})" />
+        <!-- วงเวทเรขาคณิต Hermetic ด้านหลัง -->
+        <circle cx="200" cy="195" r="130" fill="none" stroke="${accentHex}" stroke-width="1.5" stroke-dasharray="6 4" opacity="0.35" />
+        <polygon points="200,75 305,255 95,255" fill="none" stroke="${accentHex}" stroke-width="1.2" opacity="0.25" />
+        <polygon points="200,315 305,135 95,135" fill="none" stroke="${accentHex}" stroke-width="1.2" opacity="0.25" />
+        <!-- เงาร่างตัวละครลึกลับ -->
+        <path d="M85 430 C90 295, 310 295, 315 430 Z" fill="#07070a" stroke="${accentHex}" stroke-width="2" opacity="0.9" />
+        <circle cx="200" cy="185" r="58" fill="#07070a" stroke="${accentHex}" stroke-width="2.5" />
+        <!-- ดวงตาเรืองแสงในความมืด -->
+        <ellipse cx="178" cy="188" rx="9" ry="4" fill="${accentHex}" />
+        <ellipse cx="222" cy="188" rx="9" ry="4" fill="${accentHex}" />
+        <circle cx="200" cy="162" r="5" fill="#ff2a2a" opacity="0.85" />
+        <!-- รหัสแฟ้มลับ -->
+        <rect x="30" y="435" width="340" height="36" fill="#050507" stroke="${accentHex}" stroke-width="1" opacity="0.85" />
+        <text x="200" y="459" font-family="Courier New, monospace" font-size="18" font-weight="bold" fill="${accentHex}" text-anchor="middle" letter-spacing="3">SUBJECT // ${initials}</text>
+      </svg>`;
+      return "data:image/svg+xml;utf8," + encodeURIComponent(svg);
+    }
+
+    const membersData = [
+      {
+        id: "MEM-001",
+        name: "Chernikah",
+        alias: "โค้ดเนม: --- (The Nebula Flash)",
+        role: ["Explorer", "Angelo"],
+        rank: "S",
+        faction: "Primary",
+        status: "Active // Overlimit",
+        color: "#6366f1",
+        image: createPlaceholderAvatar("CNK", "#1e1b4b", "#818cf8"),
+        quote: "ไปข้าวกัน :DDDD",
+        bio: "อดีตทีม Primary ในตำนานผู้มีชื่อเสียงว่าเป็นผู้ที่เร็วที่สุดในวงการผู้ใช้เนบิวลา ผู้เคลื่อนไหวได้รวดเร็วและมีพลังทำลายล้างมหาศาล อาจารย์เฌอนิกา เบื้องหลังรอยยิ้มสบายๆ คือความเร็วระดับฉีกมิติที่เรดาร์ขององค์กรจับภาพไม่ทัน",
+        warningNote: "⚠️ DANGER LEVEL EXTREME: ค่า Power (320) และ Speed (390) ทะลุขีดจำกัดมาตรฐานของมนุษย์ ห้ามปะทะในระยะประชิดโดยเด็ดขาด",
+        stats: [
+          { label: "Power", value: 320 },
+          { label: "Speed", value: 390 },
+          { label: "Technique", value: 88 },
+          { label: "Defense", value: 70 },
+          { label: "Intelligent", value: 156 }
+        ],
+        skills: ["Blink Strike", "Counter Stance", "Tactical Rush"],
+        abilitiesDetail: [
+          {
+            name: "Blink Strike (พริบตาผ่ามิติ)",
+            type: "ACTIVE // ASSAULT",
+            desc: "บีบอัดอนุภาคเนบิวลาไว้ที่ปลายเท้าเพื่อวาร์ปข้ามระยะทางในเสี้ยววินาที (0.002 วินาที) ไปปรากฏตัวด้านหลังเป้าหมาย พร้อมฟาดคลื่นความเร็วสูงที่สร้างความเสียหายทะลุเกราะป้องกันทันที",
+            simLog: "[BLINK STRIKE]: ตรวจพบการบิดเบี้ยวของพื้นที่! Chernikah เคลื่อนที่ด้วยความเร็ว Mach 4.8 เข้าโจมตีจุดตายของเป้าหมายก่อนที่เสียงจะเดินทางมาถึง!"
+          },
+          {
+            name: "Counter Stance (ก้าวสะท้อนพริบตา)",
+            type: "REACTION // DEFENSE",
+            desc: "ตั้งสมาธิอ่านกระแสการเคลื่อนไหวและคลื่นพลังงานรอบตัวในรัศมี 25 เมตร เมื่อถูกโจมตีจะเบี่ยงวิถีการโจมตีออกและสวนกลับด้วยความเร็วเต็มพิกัดโดยไม่เสียจังหวะ",
+            simLog: "[COUNTER STANCE]: การโจมตีของศัตรูทะลุผ่านภาพติดตา (Afterimage) — Chernikah สวนกลับที่จุดบอดด้วยความแรง 320%!"
+          },
+          {
+            name: "Tactical Rush (เนบิวลากระหน่ำไร้เงา)",
+            type: "ULTIMATE // OVERLIMIT",
+            desc: "ปลดล็อกขีดจำกัดอดีตทีม Primary เคลื่อนที่สร้างภาพติดตารอบสนามรบพร้อมกันหลายทิศทาง โจมตีเป้าหมายต่อเนื่องนับสิบครั้งในพริบตาและเร่งความเร็วให้เพื่อนร่วมทีมทั้งหมด",
+            simLog: "[TACTICAL RUSH - OVERLIMIT]: เรดาร์ล้มเหลว! ตรวจพบสัญญาณของ Chernikah 12 จุดพร้อมกัน พลังทำลายล้างพุ่งแตะระดับวิกฤต!"
+          }
+        ]
+      },
+      {
+        id: "MEM-002",
+        name: "Cassini",
+        alias: "โค้ดเนม: Cipher Weaver",
+        role: ["Vanguard", "Angelo"],
+        rank: "S",
+        faction: "Oracle Network",
+        status: "Active",
+        color: "#ec4899",
+        image: createPlaceholderAvatar("CSN", "#3b0764", "#f472b6"),
+        quote: "ทุกอย่างในโลกนี้ล้วนเป็นข้อมูล ขึ้นอยู่กับว่าใครจะเป็นคนเขียนสมการ",
+        bio: "นักวางกลยุทธ์และผู้เชี่ยวชาญด้านโครงข่ายข้อมูลระดับสูง สามารถวิเคราะห์ความเป็นไปได้ของสนามรบแบบเรียลไทม์ และควบคุมโดรนสื่อสารเพื่อสร้างความได้เปรียบให้กับสมาชิกในทีม",
+        warningNote: "⚠️ INFO HAZARD: อุปกรณ์สื่อสารทุกชนิดที่อยู่ในรัศมี 500 เมตรของ Cassini สามารถถูกเจาะระบบและเขียนทับข้อมูลความทรงจำได้",
+        stats: [
+          { label: "Power", value: 55 },
+          { label: "Speed", value: 78 },
+          { label: "Technique", value: 99 },
+          { label: "Defense", value: 65 }
+        ],
+        skills: ["Neural Override", "Hologram Decoy", "Data Scan"],
+        abilitiesDetail: [
+          {
+            name: "Neural Override (แทรกแซงสมการประสาท)",
+            type: "ACTIVE // HACKING",
+            desc: "ส่งคลื่นสัญญาณเข้ารหัสผ่านฝูงโดรนไปรบกวนระบบประสาทการรับรู้ของศัตรู หรือยึดการควบคุมป้อมปืนและจักรกลในสนามรบให้หันกลับมาโจมตีพวกเดียวกันเอง",
+            simLog: "[NEURAL OVERRIDE]: เจาะระบบสำเร็จ 99.8% — ยึดการควบคุมโดรนและบิดเบือนพิกัดการมองเห็นของศัตรูในพื้นที่!"
+          },
+          {
+            name: "Hologram Decoy (ภาพลวงตาควอนตัม)",
+            type: "TACTICAL // DECEPTION",
+            desc: "สร้างร่างแยกโฮโลแกรมที่มีคลื่นความร้อนและสัญญาณชีพเหมือนจริงทุกประการเพื่อล่อเป้าศัตรู พร้อมติดตั้งกับดักข้อมูลไว้เมื่อร่างแยกถูกทำลาย",
+            simLog: "[HOLOGRAM DECOY]: สร้างร่างแยกจำลอง 3 จุด ศัตรูล็อกเป้าผิดพลาดและถูกคลื่นไวรัสข้อมูลย้อนกลับ!"
+          },
+          {
+            name: "Data Scan (เนตรพยากรณ์สนามรบ)",
+            type: "PASSIVE // RECON",
+            desc: "สแกนโครงสร้างร่างกาย จุดอ่อน และคำนวณการเคลื่อนไหวล่วงหน้าของศัตรูแบบเรียลไทม์ แล้วส่งพิกัดจุดตายให้เพื่อนร่วมทีมทั้งหมดผ่านโครงข่าย Oracle Network",
+            simLog: "[DATA SCAN]: คำนวณสมการเสร็จสิ้น — เปิดเผยจุดอ่อนของเป้าหมายทั้งหมด โอกาสชนะของทีมเพิ่มขึ้นเป็น 99.4%!"
+          }
+        ]
+      },
+      {
+        id: "MEM-003",
+        name: "Orion Kade",
+        alias: "โค้ดเนม: Iron Bastion",
+        role: "Extraordinary",
+        rank: "A",
+        faction: "Titan Forge",
+        status: "Active",
+        color: "#f59e0b",
+        image: createPlaceholderAvatar("ORK", "#451a03", "#fbbf24"),
+        quote: "ตราบใดที่โล่ของฉันยังตั้งอยู่ จะไม่มีใครผ่านไปได้",
+        bio: "ผู้เชี่ยวชาญด้านเกราะหนักและสนามพลังป้องกัน ทำหน้าที่เป็นปราการเหล็กคอยปกป้องเพื่อนร่วมทีมจากการโจมตีรุนแรง มีนิสัยสุขุม รอบคอบ และเป็นที่พึ่งพาได้ในยามวิกฤต",
+        warningNote: "⚠️ HEAVY ARMOR UNIT: เกราะสนามพลังของ Orion สามารถทนแรงระเบิดระดับทำลายอาคารได้โดยไม่ขยับแม้แต่มิลลิเมตรเดียว",
+        stats: [
+          { label: "Power", value: 85 },
+          { label: "Speed", value: 50 },
+          { label: "Technique", value: 72 },
+          { label: "Defense", value: 98 }
+        ],
+        skills: ["Aegis Barrier", "Ground Slam", "Fortify"],
+        abilitiesDetail: [
+          {
+            name: "Aegis Barrier (ปราการแสงไททัน)",
+            type: "ACTIVE // SHIELD",
+            desc: "กางโล่สนามพลังแม่เหล็กไฟฟ้าขนาดยักษ์ด้านหน้า ดูดซับแรงกระแทกและกระสุนพลังงานทุกชนิดเพื่อปกป้องสมาชิกแนวหลังทั้งหมด",
+            simLog: "[AEGIS BARRIER]: กางม่านพลังป้องกันระดับสูงสุด — ดูดซับความเสียหาย 98% จากการโจมตีด้านหน้า!"
+          },
+          {
+            name: "Ground Slam (ธรณีพิโรธสะเทือนเลื่อนลั่น)",
+            type: "ACTIVE // CROWD CONTROL",
+            desc: "ทุ่มโล่หนักอัดพลังงานเนบิวลาลงพื้นอย่างรุนแรง สร้างคลื่นกระแทกวงกว้างที่ทำให้ศัตรูรอบข้างเสียหลักล้มลงและติดสถานะมึนงง",
+            simLog: "[GROUND SLAM]: แรงสั่นสะเทือน 6.4 ริกเตอร์ในระยะ 15 เมตร ศัตรูแนวหน้าทั้งหมดเสียการทรงตัว!"
+          },
+          {
+            name: "Fortify (หลอมเกราะปราการเหล็ก)",
+            type: "BUFF // ENDURANCE",
+            desc: "เร่งเตาปฏิกรณ์ในชุดเกราะเพื่อเพิ่มความหนาแน่นของโลหะและต้านทานสถานะผิดปกติทั้งหมดเป็นเวลาชั่วคราว",
+            simLog: "[FORTIFY]: เกราะ Titan Forge ล็อกเข้าสู่โหมดป้อมปราการ ค่าพลังป้องกันพุ่งสู่ระดับสูงสุด!"
+          }
+        ]
+      },
+      {
+        id: "MEM-004",
+        name: "Proud",
+        alias: "โค้ดเนม: Nightfall",
+        role: ["Support", "Angelo"],
+        rank: "A",
+        faction: "Shadow Guild",
+        status: "Classified",
+        color: "#10b981",
+        image: createPlaceholderAvatar("SRK", "#064e3b", "#34d399"),
+        quote: "เงาไม่เคยส่งเสียง แต่รู้ทุกอย่างที่เกิดขึ้นใต้แสงไฟ",
+        bio: "เจ้าหน้าที่ปฏิบัติการลับผู้ถนัดงานแทรกซึมและข่าวกรอง มีประวัติส่วนตัวเป็นความลับสุดยอด สามารถกลมกลืนไปกับสภาพแวดล้อมและจัดการเป้าหมายได้โดยไร้ร่องรอย",
+        warningNote: "⚠️ CLASSIFIED OPERATIVE: ประวัติการปฏิบัติงาน 84% ถูกลบออกจากเซิร์ฟเวอร์หลัก หากพบเห็นเงาผิดปกติให้แจ้งศูนย์บัญชาการทันที",
+        stats: [
+          { label: "Power", value: 80 },
+          { label: "Speed", value: 98 },
+          { label: "Technique", value: 94 },
+          { label: "Defense", value: 60 }
+        ],
+        skills: ["Stealth Camo", "Silent Step", "Precision Mark"],
+        abilitiesDetail: [
+          {
+            name: "Stealth Camo (พรางกายไร้ตัวตน)",
+            type: "ACTIVE // STEALTH",
+            desc: "หักเหแสงและลบคลื่นความร้อนของร่างกายจนล่องหนอย่างสมบูรณ์ แม้แต่เซ็นเซอร์ตรวจจับพลังงานระดับสูงก็ไม่สามารถค้นพบได้",
+            simLog: "[STEALTH CAMO]: สัญญาณชีพและเงาของ Sora หายไปจากจอเรดาร์ 100%..."
+          },
+          {
+            name: "Silent Step (ย่างก้าวสุญญากาศ)",
+            type: "PASSIVE // INFILTRATION",
+            desc: "เคลื่อนที่ผ่านพื้นที่อันตรายและสิ่งกีดขวางโดยไม่ทำให้เกิดคลื่นเสียงหรือแรงสั่นสะเทือน เพิ่มความเร็วในการลอบเร้นเข้าด้านหลังเป้าหมาย",
+            simLog: "[SILENT STEP]: ลอบผ่านแนวป้องกันของศัตรูในระยะประชิดโดยไม่มีใครรู้ตัว (Noise Level: 0 dB)!"
+          },
+          {
+            name: "Precision Mark (ตีตราปลิดชีพในเงามืด)",
+            type: "ULTIMATE // EXECUTION",
+            desc: "ล็อกเป้าหมายสำคัญในความมืดแล้วพุ่งจู่โจมจุดตายด้วยมีดพลังงานความถี่สูง สร้างความเสียหายคริติคอลรุนแรงและตัดการฟื้นฟูของเป้าหมาย",
+            simLog: "[PRECISION MARK]: เป้าหมายถูกปลิดชีพจากในเงามืดภายในเสี้ยววินาที ไม่พบร่องรอยผู้ลงมือ!"
+          }
+        ]
+      },
+      {
+        id: "MEM-005",
+        name: "Yuki",
+        alias: "โค้ดเนม: Aurora Pulse",
+        role: "WhiteForce",
+        rank: "A",
+        faction: "Bio-Med Corps",
+        status: "Active",
+        color: "#38bdf8",
+        image: createPlaceholderAvatar("YK", "#075985", "#38bdf8"),
+        quote: "หน้าที่ของฉันคือพาทุกคนกลับบ้านอย่างปลอดภัย",
+        bio: "แพทย์สนามและนักวิจัยนาโนเทคโนโลยี ผู้พัฒนาอุปกรณ์ฟื้นฟูสภาพร่างกายฉุกเฉินในสนามรบ นอกจากทักษะการรักษาแล้ว ยังสามารถปรับจูนคลื่นพลังงานเพื่อเสริมสมรรถภาพให้ทีมได้อีกด้วย",
+        warningNote: "⚠️ BIO-NANO PROTOCOL: หุ่นนาโนการแพทย์ของ Yuki สามารถสมานแผลสาหัสได้ในไม่กี่วินาที แต่มีบันทึกการใช้ดัดแปลงเซลล์ในแฟ้มลับ",
+        stats: [
+          { label: "Power", value: 48 },
+          { label: "Speed", value: 75 },
+          { label: "Technique", value: 92 },
+          { label: "Defense", value: 82 }
+        ],
+        skills: ["Nano Repair", "Vital Boost", "Cleanse Field"],
+        abilitiesDetail: [
+          {
+            name: "Nano Repair (ฝูงนาโนสมานเซลล์ฉุกเฉิน)",
+            type: "ACTIVE // HEALING",
+            desc: "ปล่อยฝูงหุ่นยนต์นาโนทางการแพทย์เข้าสู่กระแสเลือดของเพื่อนร่วมทีมเพื่อห้ามเลือดและซ่อมแซมเนื้อเยื่อที่เสียหายอย่างรวดเร็วกลางสนามรบ",
+            simLog: "[NANO REPAIR]: ฝูงนาโนบอททำงาน — ฟื้นฟูสภาพร่างกายของสมาชิกในทีมกลับมาที่ 95%!"
+          },
+          {
+            name: "Vital Boost (คลื่นออโรร่ากระตุ้นชีพจร)",
+            type: "BUFF // ENHANCEMENT",
+            desc: "ยิงคลื่นพลังงานชีวภาพกระตุ้นอะดรีนาลีนและเพิ่มขีดความสามารถในการเคลื่อนที่รวมถึงความทนทานให้เพื่อนร่วมทีมชั่วคราว",
+            simLog: "[VITAL BOOST]: คลื่น Aurora Pulse กระจายทั่วทีม — เพิ่มความเร็วและอัตราการตอบสนองของกล้ามเนื้อ!"
+          },
+          {
+            name: "Cleanse Field (โดมชำระล้างพิษเนบิวลา)",
+            type: "AREA // PURIFY",
+            desc: "กางโดมสนามพลังบริสุทธิ์เพื่อสลายสารพิษ กัมมันตภาพรังสีเนบิวลา และสถานะคำสาปหรือการรบกวนทางประสาททั้งหมดในพื้นที่",
+            simLog: "[CLEANSE FIELD]: ชำระล้างการปนเปื้อนเนบิวลาในรัศมี 20 เมตรสำเร็จ!"
+          }
+        ]
+      },
+      {
+        id: "MEM-006",
+        name: "Fin",
+        alias: "โค้ดเนม: Chrono Spark",
+        role: "WhiteForce",
+        rank: "A",
+        faction: "Horizon Lab",
+        status: "Standby",
+        color: "#ec4899",
+        image: createPlaceholderAvatar("FN", "#831843", "#f472b6"),
+        quote: "ทฤษฎีจะไม่มีความหมายเลย ถ้าเราไม่กล้าทดลองมันในสนามจริง!",
+        bio: "นักประดิษฐ์หนุ่มอัจฉริยะผู้ออกแบบอาวุธพลังงานต้นแบบ ชื่นชอบการดัดแปลงอุปกรณ์แปลกใหม่เพื่อใช้สร้างจังหวะเหนือความคาดหมายในการต่อสู้",
+        warningNote: "⚠️ EXPERIMENTAL WEAPONRY: อุปกรณ์ของ Fin มีความเสี่ยงในการระเบิดโอเวอร์โหลดสูงมาก ห้ามถอดสลักนิรภัยโดยไม่จำเป็น",
+        stats: [
+          { label: "Power", value: 88 },
+          { label: "Speed", value: 82 },
+          { label: "Technique", value: 90 },
+          { label: "Defense", value: 64 }
+        ],
+        skills: ["Overcharge", "Gravity Trap", "EMP Burst"],
+        abilitiesDetail: [
+          {
+            name: "Overcharge (โอเวอร์ชาร์จปืนต้นแบบ)",
+            type: "ACTIVE // BURST DAMAGE",
+            desc: "ปลดล็อกขีดจำกัดแบตเตอรี่อาวุธพลังงานต้นแบบเพื่อยิงลำแสงพลาสมาความเข้มข้นสูงที่สร้างความเสียหายรุนแรงเป็นเส้นตรง",
+            simLog: "[OVERCHARGE]: พลังงานปืนต้นแบบพุ่งถึง 240% — ยิงลำแสงพลาสมาทะลวงแนวป้องกันสำเร็จ!"
+          },
+          {
+            name: "Gravity Trap (ทุ่นบิดเบือนแรงโน้มถ่วง)",
+            type: "TRAP // CONTROL",
+            desc: "โยนอุปกรณ์สร้างสนามแรงโน้มถ่วงเทียมลงพื้น ดึงดูดศัตรูในบริเวณใกล้เคียงให้มารวมกันที่จุดศูนย์กลางและเคลื่อนที่ช้าลงอย่างมาก",
+            simLog: "[GRAVITY TRAP]: สนามแรงโน้มถ่วงทำงาน — ดึงรั้งเป้าหมายในรัศมี 12 เมตรเข้าสู่จุดศูนย์กลาง!"
+          },
+          {
+            name: "EMP Burst (ระเบิดคลื่นแม่เหล็กไฟฟ้า)",
+            type: "AREA // DISRUPTION",
+            desc: "ปล่อยคลื่นแม่เหล็กไฟฟ้าความถี่สูงทำลายเกราะพลังงานและหยุดการทำงานของอุปกรณ์อิเล็กทรอนิกส์ของศัตรูทั้งหมดในทันที",
+            simLog: "[EMP BURST]: คลื่นแม่เหล็กไฟฟ้าปะทุ — เกราะพลังงานและระบบอาวุธของศัตรูดับสนิท!"
+          }
+        ]
+      }
+    ];
+
+    /* =========================================================================
+       ข้อมูลบันทึกลับยุค 2000 (สำหรับลิงก์แถบเครื่องมือและ Sidebar ขวา)
+       ========================================================================= */
+    const classifiedLogsData = {
+      autopsy: {
+        title: "C:\\HCO_ARCHIVE\\nebula_vessel_autopsy.htm",
+        body: `<strong>[AUTOPSY &amp; VESSEL REPORT — JUNE 19, 2000]</strong><br/><br/>
+        จากการตรวจสอบตัวอย่างผู้ถือครองพลังเนบิวลาทั้ง 6 รายในฐานข้อมูล HCO พบว่าเซลล์ในร่างกายของสมาชิกสามารถดูดซับพลังงานมืดจากอวกาศและแปรเปลี่ยนเป็นความสามารถเฉพาะตัวได้:<br/><br/>
+        • <strong>สายความเร็วเหนือมนุษย์ (Chernikah):</strong> ระบบประสาทตอบสนองเร็วกว่ามนุษย์ทั่วไป 45 เท่า<br/>
+        • <strong>สายโครงข่ายประสาท (Cassini):</strong> สมองเชื่อมต่อกับคลื่นวิทยุความถี่ต่ำตลอดเวลา<br/>
+        • <strong>คำแนะนำ:</strong> คลิกที่ช่องการ์ดตัวละครแต่ละคนในหน้าหลัก เพื่อเปิดดูรายละเอียดว่าแต่ละคนทำอะไรได้บ้างและทดสอบจำลองการใช้ทักษะ`
+      },
+      webmail: {
+        title: "Netscape Mail // HCO Intranet Inbox (3 Unread)",
+        body: `<strong>1. FROM: director@hco-intranet.org (19/06/2000 02:14 AM)</strong><br/>
+        SUBJECT: ห้ามเปิดไฟล์ของ MEM-001 โดยไม่สวมอุปกรณ์ป้องกัน<br/>
+        "ใครก็ตามที่เข้าถึงฐานข้อมูลยุคก่อตั้งนี้ อย่าลืมตรวจสอบค่า Overlimit ของ Chernikah ด้วย"<br/><br/>
+        <strong>2. FROM: cassini_node@oracle.net (19/06/2000 03:33 AM)</strong><br/>
+        SUBJECT: ฉันเห็นนะว่าคุณกำลังเปิดอ่านไฟล์นี้อยู่<br/>
+        "ทุกคลิกของคุณถูกบันทึกไว้ในสมการเรียบร้อยแล้ว :)"<br/><br/>
+        <strong>3. FROM: unknown@shadow.guild (REDACTED)</strong><br/>
+        SUBJECT: [ไม่มีหัวข้อ]<br/>
+        "อย่าเชื่อข้อมูลในหน้าเว็บสีสว่าง... ความจริงทั้งหมดอยู่ในหน้าต่างสีมืดนี้ต่างหาก"`
+      },
+      calendar: {
+        title: "Eclipse_Calendar // มิถุนายน 2000",
+        body: `<strong>ตารางเหตุการณ์ผิดปกติ (June 2000):</strong><br/><br/>
+        • 06 มิ.ย. 2000 — ก่อตั้งระบบฐานข้อมูลลับ HCO Archive<br/>
+        • 14 มิ.ย. 2000 — ตรวจพบค่าความเร็วของ MEM-001 (Chernikah) ทะลุขีดจำกัดเครื่องวัด<br/>
+        • 19 มิ.ย. 2000 — ระบบเครือข่ายถูกตัดขาดชั่วคราว บันทึกข้อมูลผู้ถือครองทั้ง 6 รายลงเซิร์ฟเวอร์สำรอง`
+      },
+      radio: {
+        title: "Dead_Radio // คลื่นความถี่ 104.9 MHz",
+        body: `<strong>[RECEIVING ENCRYPTED NUMBER STATION...]</strong><br/><br/>
+        "...ซ่า... 001... 320... 390... ไปข้าวกัน... ซ่า... เงาไม่เคยส่งเสียง... หากคุณได้ยินข้อความนี้ โปรดตรวจสอบความสามารถของสมาชิกแต่ละคนในตาราง..."`
+      },
+      people: {
+        title: "Missing_Vessels // รายชื่อผู้ปฏิบัติงานในเงามืด",
+        body: `สถานะปัจจุบันของสมาชิกทั้ง 6 รายในแฟ้มลับปี 2000:<br/>
+        - MEM-001 Chernikah: Active (Overlimit)<br/>
+        - MEM-002 Cassini: Active (Monitoring Server)<br/>
+        - MEM-003 Orion Kade: Active (Sector Guard)<br/>
+        - MEM-004 Proud: Classified (ไม่ทราบพิกัด)<br/>
+        - MEM-005 Yuki: Active (Bio-Lab)<br/>
+        - MEM-006 Fin: Standby (Testing Prototype)`
+      },
+      yellowpages: {
+        title: "Black_Pages // สารบัญหน่วยงานย่อยในองค์กร Primary",
+        body: `• <strong>Angelo:</strong> หน่วยปฏิบัติการพิเศษความเร็วสูงและสำรวจพื้นที่อันตราย<br/>
+        • <strong>Oracle Network:</strong> หน่วยข่าวกรองและการสงครามไซเบอร์<br/>
+        • <strong>Titan Forge:</strong> หน่วยเกราะหนักและป้อมปราการแนวหน้า<br/>
+        • <strong>Shadow Guild:</strong> หน่วยลอบเร้นและปฏิบัติการลับสุดยอด<br/>
+        • <strong>Bio-Med Corps:</strong> หน่วยวิจัยนาโนเทคโนโลยีและการแพทย์สนาม<br/>
+        • <strong>Horizon Lab:</strong> หน่วยพัฒนาอาวุธพลังงานต้นแบบ`
+      },
+      download: {
+        title: "Download_Autopsy // สถานะการดาวน์โหลดแฟ้มข้อมูล",
+        body: `กำลังจำลองการดึงข้อมูลจากเทปแม่เหล็กปี 2000...<br/>
+        [████████████████████] 100% COMPLETE<br/><br/>
+        ปลดล็อกข้อมูล <strong>"ตัวละครทำอะไรได้บ้าง (Abilities &amp; Field Actions)"</strong> ของตัวละครครบทั้ง 6 คนแล้ว! คุณสามารถคลิกที่การ์ดตัวละครเพื่อเปิดอ่านและกดปุ่มทดสอบทักษะได้เลย`
+      },
+      customize: {
+        title: "Terminal_Config // ตั้งค่าหน้าจอยุค 2000",
+        body: `คุณสามารถใช้ปุ่มบนแถบเบราว์เซอร์ด้านบนเพื่อ:<br/>
+        • เปิด/ปิด เส้นสแกนหน้าจอเก่า (<strong>📺 CRT: ON/OFF</strong>)<br/>
+        • เปิด/ปิด เสียงคลื่นความถี่ต่ำและเสียงคลิกยุคเก่า (<strong>🔇 Sound: ON/OFF</strong>)<br/>
+        • สลับกลับไปหน้าเว็บหลัก HCO 1.0 เพื่อทดสอบการกดคลิกเชื่อมหน้าต่าง`
+      },
+      primary: {
+        title: "FILE // Project_Primary_1999",
+        body: `บันทึกโครงการ Primary: โครงการคัดเลือกผู้ใช้เนบิวลารุ่นบุกเบิกที่มีเพียงไม่กี่คนเท่านั้นที่รอดชีวิตและควบคุมพลังระดับทำลายล้างได้ หนึ่งในสมาชิกที่ถูกกล่าวขานมากที่สุดคืออาจารย์เฌอนิกา (Chernikah) ผู้ทำความเร็วสูงสุดในประวัติศาสตร์องค์กร`
+      },
+      nebula: {
+        title: "FILE // Nebula_Overlimit_Theory",
+        body: `ทฤษฎี Overlimit: โดยปกติร่างกายมนุษย์จะรองรับค่าพารามิเตอร์เนบิวลาได้ไม่เกิน 100 หน่วย แต่ในกรณีของสมาชิกพิเศษบางราย (เช่น MEM-001) ค่าพลังจะพุ่งทะลุเพดานไปถึงระดับ 300+ ทำให้เกิดปรากฏการณ์บิดเบือนมิติรอบตัว`
+      },
+      shadow: {
+        title: "FILE // Shadow_Guild_Redacted",
+        body: `แฟ้มข้อมูลหน่วย Shadow Guild (MEM-004 Proud): ปฏิบัติการทั้งหมดดำเนินการในความมืด ไม่มีภาพถ่ายใบหน้าจริงในสารบบ มีเพียงบันทึกว่าเป้าหมายทุกชิ้นที่ถูกตีตราด้วย Precision Mark ไม่เคยรอดชีวิต`
+      },
+      tape04: {
+        title: "AUDIO TRANSCRIPT // Tape_04.txt",
+        body: `[00:01] เสียงสัญญาณรบกวน...<br/>
+        [00:08] Elena: "ระดับรังสีเนบิวลาในห้องทดลองกำลังพุ่งสูงขึ้น Orion กางโล่ Aegis เดี๋ยวนี้!"<br/>
+        [00:14] Orion: "โล่ตั้งรับแล้ว! Noah ชาร์จปืน EMP เลย!"<br/>
+        [00:19] Chernikah: "เดี๋ยวจัดการเอง เสร็จแล้วไปกินข้าวกันนะ :D"<br/>
+        [00:21] (เสียงโซนิคบูมดังสนั่น ก่อนที่เทปจะตัดจบ)`
+      }
+    };
+
+    /* =========================================================================
+       ระบบเสียงสังเคราะห์ Web Audio API (เสียงคลิกปุ่มยุค 2000 & เสียงบรรยากาศหลอนๆ)
+       ========================================================================= */
+    let soundEnabled = false;
+    let audioCtx = null;
+
+    function playRetroSound(type) {
+      if (!soundEnabled) return;
+      try {
+        if (!audioCtx) {
+          const AudioContextClass = window.AudioContext || window.webkitAudioContext;
+          if (!AudioContextClass) return;
+          audioCtx = new AudioContextClass();
+        }
+        if (audioCtx.state === "suspended") {
+          audioCtx.resume();
+        }
+        const osc = audioCtx.createOscillator();
+        const gain = audioCtx.createGain();
+        osc.connect(gain);
+        gain.connect(audioCtx.destination);
+
+        const now = audioCtx.currentTime;
+        if (type === "click") {
+          osc.type = "square";
+          osc.frequency.setValueAtTime(190, now);
+          osc.frequency.exponentialRampToValueAtTime(75, now + 0.045);
+          gain.gain.setValueAtTime(0.06, now);
+          gain.gain.exponentialRampToValueAtTime(0.001, now + 0.045);
+          osc.start(now);
+          osc.stop(now + 0.05);
+        } else if (type === "open") {
+          osc.type = "sawtooth";
+          osc.frequency.setValueAtTime(110, now);
+          osc.frequency.linearRampToValueAtTime(290, now + 0.14);
+          gain.gain.setValueAtTime(0.07, now);
+          gain.gain.exponentialRampToValueAtTime(0.001, now + 0.16);
+          osc.start(now);
+          osc.stop(now + 0.17);
+        } else if (type === "skill") {
+          osc.type = "triangle";
+          osc.frequency.setValueAtTime(420, now);
+          osc.frequency.exponentialRampToValueAtTime(95, now + 0.22);
+          gain.gain.setValueAtTime(0.09, now);
+          gain.gain.exponentialRampToValueAtTime(0.001, now + 0.24);
+          osc.start(now);
+          osc.stop(now + 0.25);
+        }
+      } catch (err) {
+        // Ignore audio errors if blocked
+      }
+    }
+
+    /* =========================================================================
+       ส่วนควบคุมการทำงานของหน้าเว็บ (JavaScript Logic)
+       ========================================================================= */
+    const y2kArchiveView = document.getElementById("y2kArchiveView");
+    const modernHcoView = document.getElementById("modernHcoView");
+    const btnShowY2kView = document.getElementById("btnShowY2kView");
+    const btnShowModernView = document.getElementById("btnShowModernView");
+    const openDarkArchiveFromModernBtn = document.getElementById("openDarkArchiveFromModernBtn");
+    const y2kBackToModernBtn = document.getElementById("y2kBackToModernBtn");
+
+    // Elements ของหน้ายุค 2000
+    const y2kRosterGrid = document.getElementById("y2kRosterGrid");
+    const y2kSearchInput = document.getElementById("y2kSearchInput");
+    const y2kSearchBtn = document.getElementById("y2kSearchBtn");
+    const y2kResetBtn = document.getElementById("y2kResetBtn");
+    const y2kFilterLinks = document.querySelectorAll(".y2k-filter-link");
+    const y2kCountLabel = document.getElementById("y2kCountLabel");
+    const y2kQuickJumpList = document.getElementById("y2kQuickJumpList");
+
+    // Elements ของหน้า Modern เดิม
+    const rosterGrid = document.getElementById("rosterGrid");
+    const searchInput = document.getElementById("searchInput");
+    const filterButtons = document.querySelectorAll(".filter-btn");
+
+    // Elements ของ Modal ตัวละคร
+    const cardModal = document.getElementById("cardModal");
+    const characterCard = document.getElementById("characterCard");
+    const closeModalBtn = document.getElementById("closeModalBtn");
+
+    // Elements ของ System Dialog
+    const sysDialogModal = document.getElementById("sysDialogModal");
+    const sysDialogTitle = document.getElementById("sysDialogTitle");
+    const sysDialogContent = document.getElementById("sysDialogContent");
+    const closeSysDialogBtn = document.getElementById("closeSysDialogBtn");
+
+    let y2kFilter = "ALL";
+    let y2kQuery = "";
+    let currentRoleFilter = "ALL";
+    let currentSearchQuery = "";
+
+    function getMemberRoles(member) {
+      return Array.isArray(member.role) ? member.role : [member.role];
+    }
+
+    function renderRoleFade(member) {
+      const roles = getMemberRoles(member);
+      if (roles.length === 1) return roles[0];
+      return `<span class="role-fade" data-roles="${roles.join("|")}"><span class="${roles[0] === "Angelo" ? "role-angelo" : ""}">${roles[0]}</span></span>`;
+    }
+
+    function setupRoleFadeRotation() {
+      document.querySelectorAll(".role-fade:not([data-role-init])").forEach((element) => {
+        element.dataset.roleInit = "true";
+        const roles = (element.dataset.roles || "").split("|").filter(Boolean);
+        if (roles.length < 2) return;
+        let index = 0;
+        const cycle = () => {
+          setTimeout(() => {
+            element.classList.add("is-fading");
+            setTimeout(() => {
+              index = (index + 1) % roles.length;
+              element.innerHTML = `<span class="${roles[index] === "Angelo" ? "role-angelo" : ""}">${roles[index]}</span>`;
+              requestAnimationFrame(() => {
+                requestAnimationFrame(() => {
+                  element.classList.remove("is-fading");
+                  element.classList.add("is-sweeping");
+                  setTimeout(() => element.classList.remove("is-sweeping"), 630);
+                  cycle();
+                });
+              });
+            }, 630);
+          }, 7000);
+        };
+        cycle();
+      });
+    }
+
+    // ฟังก์ชันสลับหน้าต่างระหว่าง "หน้าเว็บยุค 2000 โทนมืด" และ "หน้าเว็บหลัก HCO 1.0"
+    function switchPageMode(mode) {
+      playRetroSound("open");
+      if (mode === "y2k") {
+        y2kArchiveView.style.display = "block";
+        modernHcoView.style.display = "none";
+        btnShowY2kView.classList.add("active");
+        btnShowModernView.classList.remove("active");
+        window.scrollTo({ top: 0, behavior: "smooth" });
+      } else {
+        y2kArchiveView.style.display = "none";
+        modernHcoView.style.display = "block";
+        btnShowModernView.classList.add("active");
+        btnShowY2kView.classList.remove("active");
+        window.scrollTo({ top: 0, behavior: "smooth" });
+      }
+    }
+
+    btnShowY2kView.addEventListener("click", () => switchPageMode("y2k"));
+    btnShowModernView.addEventListener("click", () => switchPageMode("modern"));
+    openDarkArchiveFromModernBtn.addEventListener("click", () => switchPageMode("y2k"));
+    y2kBackToModernBtn.addEventListener("click", () => switchPageMode("modern"));
+
+    // ฟังก์ชันตรวจสอบเงื่อนไขตัวกรอง (รองรับทั้ง Role, Faction เช่น Angelo และ Rank เช่น S)
+    function matchesMemberFilter(member, filterValue, searchText) {
+      const matchCategory =
+        filterValue === "ALL" ||
+        getMemberRoles(member).some((role) => role.toLowerCase() === filterValue.toLowerCase()) ||
+        member.faction.toLowerCase() === filterValue.toLowerCase() ||
+        member.rank.toLowerCase() === filterValue.toLowerCase();
+
+      const q = searchText.trim().toLowerCase();
+      if (!q) return matchCategory;
+
+      const skillMatch = member.skills.some((sk) => sk.toLowerCase().includes(q));
+      const abilityMatch = (member.abilitiesDetail || []).some(
+        (ab) => ab.name.toLowerCase().includes(q) || ab.desc.toLowerCase().includes(q)
+      );
+
+      const matchText =
+        member.name.toLowerCase().includes(q) ||
+        member.alias.toLowerCase().includes(q) ||
+        getMemberRoles(member).some((role) => role.toLowerCase().includes(q)) ||
+        member.faction.toLowerCase().includes(q) ||
+        member.id.toLowerCase().includes(q) ||
+        skillMatch ||
+        abilityMatch;
+
+      return matchCategory && matchText;
+    }
+
+    // 1. เรนเดอร์ตารางช่องตัวละครในหน้าต่างยุค 2000 โทนมืด (Y2K Roster Grid)
+    function renderY2kRoster() {
+      y2kRosterGrid.innerHTML = "";
+      const filtered = membersData.filter((m) => matchesMemberFilter(m, y2kFilter, y2kQuery));
+      y2kCountLabel.textContent = `[FOUND: ${filtered.length} VESSELS]`;
+
+      if (filtered.length === 0) {
+        y2kRosterGrid.innerHTML = `
+          <div style="grid-column: 1/-1; padding: 28px; border: 1px dashed #7f1d1d; background: #090607; color: #fca5a5; font-family: 'Courier New', monospace; text-align: center;">
+            [ERROR 404 // FILE NOT FOUND]: ไม่พบแฟ้มข้อมูลตัวละครที่ตรงกับคำค้นหาในคลังข้อมูลปี 2000
+          </div>`;
+        return;
+      }
+
+      filtered.forEach((member) => {
+        const slot = document.createElement("div");
+        slot.className = "y2k-char-slot";
+        slot.style.setProperty("--slot-color", member.color);
+
+        const firstAbility =
+          member.abilitiesDetail && member.abilitiesDetail.length > 0
+            ? member.abilitiesDetail[0].name
+            : member.skills[0];
+
+        slot.innerHTML = `
+          <div class="y2k-slot-titlebar">
+            <span>📁 ${member.id}.DAT</span>
+            <span class="y2k-rank-stamp">${member.rank}</span>
+          </div>
+          <div class="y2k-slot-portrait">
+            <img src="${member.image}" alt="${member.name}" />
+            <div class="y2k-portrait-noise"></div>
+            <div class="y2k-status-pill">
+              <span class="y2k-led"></span>
+              <span>${member.status}</span>
+            </div>
+          </div>
+          <div class="y2k-slot-body">
+            <div>
+              <div class="y2k-slot-role">[${member.faction} // ${renderRoleFade(member)}]</div>
+              <div class="y2k-slot-name">${member.name}</div>
+              <div class="y2k-slot-alias">${member.alias}</div>
+              <div class="y2k-slot-abilities-preview">
+                <strong>ความสามารถเด่น:</strong> ${firstAbility} (+อีก ${member.skills.length - 1} ทักษะ)
+              </div>
+            </div>
+            <div class="y2k-slot-action-link">
+              <span><u>คลิกดูว่าทำอะไรได้บ้าง</u></span>
+              <span>[OPEN &gt;&gt;]</span>
+            </div>
+          </div>
+        `;
+
+        slot.addEventListener("click", () => {
+          playRetroSound("open");
+          openCharacterModal(member);
+        });
+        y2kRosterGrid.appendChild(slot);
+      });
+      setupRoleFadeRotation();
+    }
+
+    // สร้างลิงก์ด่วนรายชื่อตัวละครใน Sidebar ขวา (Quick Subject Jump)
+    function renderQuickJumpSidebar() {
+      y2kQuickJumpList.innerHTML = "";
+      membersData.forEach((member) => {
+        const li = document.createElement("li");
+        const btn = document.createElement("button");
+        btn.type = "button";
+        btn.className = "y2k-side-link-btn";
+        btn.textContent = `${member.id}: ${member.name} (${member.rank})`;
+        btn.addEventListener("click", () => {
+          playRetroSound("open");
+          openCharacterModal(member);
+        });
+        li.appendChild(btn);
+        y2kQuickJumpList.appendChild(li);
+      });
+    }
+
+    // 2. เรนเดอร์ตารางการ์ดในหน้าเว็บหลักแบบเดิม (Modern HCO 1.0)
+    function renderRoster() {
+      rosterGrid.innerHTML = "";
+      const filtered = membersData.filter((m) =>
+        matchesMemberFilter(m, currentRoleFilter, currentSearchQuery)
+      );
+
+      if (filtered.length === 0) {
+        rosterGrid.innerHTML = `<p style="grid-column: 1/-1; text-align:center; color:#9ca3af; padding: 40px 0;">ไม่พบข้อมูลสมาชิกที่ค้นหา</p>`;
+        return;
+      }
+
+      filtered.forEach((member) => {
+        const cardEl = document.createElement("div");
+        cardEl.className = "member-item";
+        cardEl.style.setProperty("--item-color", member.color);
+
+        cardEl.innerHTML = `
+          <div class="member-thumb">
+            <img src="${member.image}" alt="${member.name}" />
+            <span class="member-id-tag">${member.id}</span>
+            <span class="member-rank-tag">${member.rank}</span>
+          </div>
+          <div class="member-info">
+            <div>
+              <div class="member-role">${member.faction} • ${renderRoleFade(member)}</div>
+              <div class="member-name">${member.name}</div>
+              <div class="member-alias">${member.alias}</div>
+            </div>
+            <div class="click-hint">
+              <span>ดูการ์ดตัวละครและความสามารถ</span>
+              <span>&rarr;</span>
+            </div>
+          </div>
+        `;
+
+        cardEl.addEventListener("click", () => openCharacterModal(member));
+        rosterGrid.appendChild(cardEl);
+      });
+      setupRoleFadeRotation();
+    }
+
+    // 3. ฟังก์ชันเปิดหน้าต่าง Modal แสดงข้อมูลตัวละครและ "ตัวละครทำอะไรได้บ้าง"
+    function openCharacterModal(member) {
+      characterCard.style.setProperty("--card-accent", member.color);
+      document.getElementById("modalWindowFilename").textContent = `${member.id}_${member.name.toUpperCase().replace(/\s+/g, "_")}.EXE`;
+      document.getElementById("modalImg").src = member.image;
+      document.getElementById("modalIdBadge").textContent = member.id;
+      document.getElementById("modalQuote").textContent = `"${member.quote}"`;
+      document.getElementById("modalRole").innerHTML = `${renderRoleFade(member)} // ${member.faction}`;
+      setupRoleFadeRotation();
+      document.getElementById("modalName").textContent = member.name;
+      document.getElementById("modalAlias").textContent = member.alias;
+      document.getElementById("modalFaction").textContent = member.faction;
+      document.getElementById("modalRank").textContent = member.rank;
+      document.getElementById("modalStatus").textContent = member.status;
+      document.getElementById("modalBio").textContent = member.bio;
+      document.getElementById("modalWarningBox").textContent =
+        member.warningNote || "[WARNING]: แฟ้มข้อมูลนี้อยู่ภายใต้การควบคุมขององค์กร Primary";
+
+      const simTerminal = document.getElementById("abilitySimTerminal");
+      simTerminal.innerHTML = `&gt; [SUBJECT: ${member.name.toUpperCase()}] พร้อมจำลองการทำงานของทักษะ คลิกปุ่ม [▶ ทดสอบการใช้ทักษะ] ของแต่ละสกิลด้านบน...`;
+
+      // แสดงรายละเอียดว่า "ตัวละครทำอะไรได้บ้าง" (Abilities Detailed List)
+      const abilitiesContainer = document.getElementById("modalAbilitiesDetailed");
+      abilitiesContainer.innerHTML = "";
+      const detailsList = member.abilitiesDetail || [];
+
+      detailsList.forEach((ab, idx) => {
+        const item = document.createElement("div");
+        item.className = "ability-detail-item";
+        item.innerHTML = `
+          <div class="ability-top-row">
+            <span class="ability-name-badge">${idx + 1}. ${ab.name}</span>
+            <span class="ability-type-tag">${ab.type}</span>
+          </div>
+          <p class="ability-desc-text">${ab.desc}</p>
+          <button type="button" class="ability-test-btn">▶ ทดสอบการใช้ทักษะ (${ab.name.split(" ")[0]})</button>
+        `;
+        const testBtn = item.querySelector(".ability-test-btn");
+        testBtn.addEventListener("click", () => {
+          playRetroSound("skill");
+          simTerminal.innerHTML = `<span style="color:#ffd60a;">&gt; EXECUTING SKILL [${ab.name}]...</span><br/>${ab.simLog}`;
+        });
+        abilitiesContainer.appendChild(item);
+      });
+
+      // สร้างหลอดค่าพลัง (Stats) รองรับค่าเกิน 100 (Overlimit)
+      const statsContainer = document.getElementById("modalStats");
+      statsContainer.innerHTML = "";
+      member.stats.forEach((st) => {
+        const isOver = st.value > 100;
+        const barWidthPercent = isOver ? 100 : Math.max(0, st.value);
+        const row = document.createElement("div");
+        row.className = "stat-row";
+        row.innerHTML = `
+          <span class="stat-name">${st.label}</span>
+          <div class="stat-bar-bg">
+            <div class="stat-bar-fill ${isOver ? "overlimit" : ""}" style="width: 0%" data-target="${barWidthPercent}%"></div>
+          </div>
+          <span class="stat-val ${isOver ? "overlimit-text" : ""}">${st.value}${isOver ? " !!" : ""}</span>
+        `;
+        statsContainer.appendChild(row);
+      });
+
+      // สร้างป้ายทักษะย่อ (Skills Tags) คลิกแล้วจำลองทักษะได้เช่นกัน
+      const skillsContainer = document.getElementById("modalSkills");
+      skillsContainer.innerHTML = "";
+      member.skills.forEach((skill, idx) => {
+        const span = document.createElement("button");
+        span.type = "button";
+        span.className = "skill-tag";
+        span.textContent = skill;
+        span.addEventListener("click", () => {
+          playRetroSound("skill");
+          const matchedDetail = (member.abilitiesDetail || [])[idx];
+          if (matchedDetail) {
+            simTerminal.innerHTML = `<span style="color:#ffd60a;">&gt; EXECUTING [${matchedDetail.name}]...</span><br/>${matchedDetail.simLog}`;
+          } else {
+            simTerminal.innerHTML = `&gt; เรียกใช้งานทักษะ [${skill}] ของ ${member.name} สำเร็จ!`;
+          }
+        });
+        skillsContainer.appendChild(span);
+      });
+
+      cardModal.classList.add("open");
+      cardModal.setAttribute("aria-hidden", "false");
+
+      requestAnimationFrame(() => {
+        setTimeout(() => {
+          document.querySelectorAll(".stat-bar-fill").forEach((bar) => {
+            bar.style.width = bar.getAttribute("data-target");
+          });
+        }, 50);
+      });
+    }
+
+    function closeCharacterModal() {
+      playRetroSound("click");
+      cardModal.classList.remove("open");
+      cardModal.setAttribute("aria-hidden", "true");
+    }
+
+    // ฟังก์ชันเปิดหน้าต่างอ่านบันทึกข้อมูลลับ (System Dialog)
+    function openSysDialog(logKey) {
+      playRetroSound("open");
+      const data = classifiedLogsData[logKey] || {
+        title: "C:\\HCO_ARCHIVE\\SYSTEM_NOTICE.EXE",
+        body: "ไม่พบข้อมูลในเซิร์ฟเวอร์"
+      };
+      sysDialogTitle.textContent = data.title;
+      sysDialogContent.innerHTML = data.body;
+      sysDialogModal.classList.add("open");
+      sysDialogModal.setAttribute("aria-hidden", "false");
+    }
+
+    function closeSysDialog() {
+      playRetroSound("click");
+      sysDialogModal.classList.remove("open");
+      sysDialogModal.setAttribute("aria-hidden", "true");
+    }
+
+    // Event Listeners สำหรับปิด Modal
+    closeModalBtn.addEventListener("click", closeCharacterModal);
+    cardModal.addEventListener("click", (e) => {
+      if (e.target === cardModal) closeCharacterModal();
+    });
+
+    closeSysDialogBtn.addEventListener("click", closeSysDialog);
+    sysDialogModal.addEventListener("click", (e) => {
+      if (e.target === sysDialogModal) closeSysDialog();
+    });
+
+    window.addEventListener("keydown", (e) => {
+      if (e.key === "Escape") {
+        if (cardModal.classList.contains("open")) closeCharacterModal();
+        if (sysDialogModal.classList.contains("open")) closeSysDialog();
+      }
+    });
+
+    // Event Listeners สำหรับการค้นหาและกรองในหน้ายุค 2000
+    y2kSearchInput.addEventListener("input", (e) => {
+      y2kQuery = e.target.value;
+      renderY2kRoster();
+    });
+
+    y2kSearchBtn.addEventListener("click", () => {
+      playRetroSound("click");
+      y2kQuery = y2kSearchInput.value;
+      renderY2kRoster();
+    });
+
+    y2kResetBtn.addEventListener("click", () => {
+      playRetroSound("click");
+      y2kQuery = "";
+      y2kFilter = "ALL";
+      y2kSearchInput.value = "";
+      y2kFilterLinks.forEach((l) => l.classList.remove("active"));
+      y2kFilterLinks[0].classList.add("active");
+      renderY2kRoster();
+    });
+
+    y2kFilterLinks.forEach((link) => {
+      link.addEventListener("click", () => {
+        playRetroSound("click");
+        y2kFilterLinks.forEach((l) => l.classList.remove("active"));
+        link.classList.add("active");
+        y2kFilter = link.getAttribute("data-filter");
+        document.getElementById("y2kAddressInput").value =
+          `http://hco-intranet.org/archive_2000/vessels.htm?filter=${y2kFilter.toLowerCase()}`;
+        renderY2kRoster();
+      });
+    });
+
+    // Event Listeners สำหรับแถบเครื่องมือยุค 2000 และลิงก์ Sidebar
+    document.querySelectorAll(".y2k-tool-item").forEach((btn) => {
+      btn.addEventListener("click", () => {
+        openSysDialog(btn.getAttribute("data-log"));
+      });
+    });
+
+    document.querySelectorAll("[data-incident]").forEach((btn) => {
+      btn.addEventListener("click", () => {
+        openSysDialog(btn.getAttribute("data-incident"));
+      });
+    });
+
+    document.getElementById("openAutopsyReportLink").addEventListener("click", () => {
+      openSysDialog("autopsy");
+    });
+
+    document.getElementById("y2kBookmarksBtn").addEventListener("click", () => {
+      openSysDialog("people");
+    });
+
+    document.getElementById("anomalyScanBtn").addEventListener("click", () => {
+      openSysDialog("nebula");
+    });
+
+    document.getElementById("spyonitTextLink").addEventListener("click", () => {
+      openSysDialog("nebula");
+    });
+
+    // ปุ่มเปิด/ปิด เส้นสแกนจอ CRT
+    const crtOverlay = document.getElementById("crtOverlay");
+    const y2kCrtToggleBtn = document.getElementById("y2kCrtToggleBtn");
+    let crtOn = true;
+    y2kCrtToggleBtn.addEventListener("click", () => {
+      crtOn = !crtOn;
+      crtOverlay.classList.toggle("hidden", !crtOn);
+      y2kCrtToggleBtn.textContent = crtOn ? "📺 CRT: ON" : "📺 CRT: OFF";
+      playRetroSound("click");
+    });
+
+    // ปุ่มเปิด/ปิด เสียง Retro Sound
+    const y2kAudioToggleBtn = document.getElementById("y2kAudioToggleBtn");
+    y2kAudioToggleBtn.addEventListener("click", () => {
+      soundEnabled = !soundEnabled;
+      y2kAudioToggleBtn.textContent = soundEnabled ? "🔊 Sound: ON" : "🔇 Sound: OFF";
+      if (soundEnabled) playRetroSound("open");
+    });
+
+    // Event Listeners สำหรับหน้าเว็บหลักเดิม (Modern HCO 1.0)
+    searchInput.addEventListener("input", (e) => {
+      currentSearchQuery = e.target.value;
+      renderRoster();
+    });
+
+    filterButtons.forEach((btn) => {
+      btn.addEventListener("click", () => {
+        filterButtons.forEach((b) => b.classList.remove("active"));
+        btn.classList.add("active");
+        currentRoleFilter = btn.getAttribute("data-role");
+        renderRoster();
+      });
+    });
+
+    // เริ่มต้นเรนเดอร์ทั้งสองหน้าต่าง
+    renderY2kRoster();
+    renderQuickJumpSidebar();
+    renderRoster();
+  </script>
+</body>
+</html>
